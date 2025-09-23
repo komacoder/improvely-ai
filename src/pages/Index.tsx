@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Navigation } from '@/components/ui/navigation';
 import { EssayAnalyzer } from '@/components/EssayAnalyzer';
+import { TypingAnimation } from '@/components/TypingAnimation';
 import { useAuthContext } from '@/auth/hooks/useAuthContext';
 
 const Index = () => {
@@ -43,8 +44,11 @@ const Index = () => {
               IELTS Essay Band Uplift
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Transform your IELTS essays with AI-powered analysis and get
-              improved versions for Band 7, 8, and 9.
+              <TypingAnimation 
+                text="Transform your IELTS essays with AI-powered analysis and get improved versions for Band 7, 8, and 9."
+                speed={30}
+                className="inline"
+              />
             </p>
           </div>
           <EssayAnalyzer

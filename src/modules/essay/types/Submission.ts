@@ -21,6 +21,28 @@ export enum IELTSWritingTargetScore {
   BAND_NINE = 'BAND_NINE',
 }
 
+export interface ImprovedVersion {
+  introduction: string;
+  body: string[];
+  conclusion: string;
+  criteriaResponse: {
+    taskResponse: string;
+    coherence: string;
+    lexical: string;
+    grammar: string;
+  };
+}
+
+export interface InlineFeedback {
+  originalText: string;
+  startIndex: number;
+  endIndex: number;
+  category: string;
+  explanation: string;
+  suggestion: string;
+  suggestionExplanation: string;
+}
+
 export interface Submission {
   _id: string;
   body: string;
@@ -31,28 +53,11 @@ export interface Submission {
   aiFeedback: {
     mistakes: string[];
     suggestions: string[];
+    inlineFeedback?: InlineFeedback[];
     improvedVersions?: {
-      band7: {
-        introduction: string;
-        body?: string[];
-        body_one?: string;
-        body_two?: string;
-        conclusion: string;
-      };
-      band8: {
-        introduction: string;
-        body?: string[];
-        body_one?: string;
-        body_two?: string;
-        conclusion: string;
-      };
-      band9: {
-        introduction: string;
-        body?: string[];
-        body_one?: string;
-        body_two?: string;
-        conclusion: string;
-      };
+      band7: ImprovedVersion;
+      band8: ImprovedVersion;
+      band9: ImprovedVersion;
     };
   };
   createdAt: string;
@@ -62,5 +67,11 @@ export interface Submission {
     coherence: number;
     lexical: number;
     grammar: number;
+  };
+  // Separate field for improved versions from the second API call
+  improvedVersion?: {
+    band7: ImprovedVersion;
+    band8: ImprovedVersion;
+    band9: ImprovedVersion;
   };
 }

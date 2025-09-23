@@ -2,6 +2,16 @@ import React, { useCallback, memo, useEffect, useState } from 'react';
 import { getSentenceColors, getActiveSentenceColor, getHighlightColor } from '@/lib/sentenceUtils';
 import { SuggestionHighlighter } from './SuggestionHighlighter';
 
+interface InlineFeedback {
+  originalText: string;
+  startIndex: number;
+  endIndex: number;
+  category: string;
+  explanation: string;
+  suggestion: string;
+  suggestionExplanation: string;
+}
+
 interface SentenceWrapperProps {
   sentence: {
     id: string;
@@ -15,6 +25,7 @@ interface SentenceWrapperProps {
   className?: string;
   mistakes?: string[];
   suggestions?: string[];
+  inlineFeedback?: InlineFeedback[];
   showErrors?: boolean;
 }
 
@@ -35,6 +46,7 @@ export const SentenceWrapper: React.FC<SentenceWrapperProps> = memo(({
   className = '',
   mistakes = [],
   suggestions = [],
+  inlineFeedback = [],
   showErrors = false
 }) => {
   const baseColors = getSentenceColors(sentence.index);
@@ -104,11 +116,12 @@ export const SentenceWrapper: React.FC<SentenceWrapperProps> = memo(({
       aria-label={`Sentence ${sentence.index + 1}: ${sentence.text.substring(0, 50)}${sentence.text.length > 50 ? '...' : ''}`}
       aria-describedby={`sentence-${sentence.id}-description`}
     >
-      {showErrors && (mistakes.length > 0 || suggestions.length > 0) ? (
+      {showErrors && (mistakes.length > 0 || suggestions.length > 0 || inlineFeedback.length > 0) ? (
         <SuggestionHighlighter
           text={sentence.text}
           mistakes={mistakes}
           suggestions={suggestions}
+          inlineFeedback={inlineFeedback}
         />
       ) : (
         sentence.text

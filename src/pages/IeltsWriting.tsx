@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Navigation } from '@/components/ui/navigation';
 import { EssayAnalyzer } from '@/components/EssayAnalyzer';
+import { TypingAnimation } from '@/components/TypingAnimation';
 
 const IeltsWriting = () => {
   const [searchParams] = useSearchParams();
@@ -45,8 +46,11 @@ const IeltsWriting = () => {
               IELTS Essay Band Uplift
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Transform your IELTS essays with AI-powered analysis and get
-              improved versions for Band 7, 8, and 9.
+              <TypingAnimation 
+                text="Transform your IELTS essays with AI-powered analysis and get improved versions for Band 7, 8, and 9."
+                speed={30}
+                className="inline"
+              />
             </p>
           </div>
           <EssayAnalyzer

@@ -107,8 +107,8 @@ export const plansAPI = {
   getUserPlanAnalytics: async () =>
     http.get(`/user-plans/analytics`).then(res => res.data),
 
-  // Legacy order creation kept for backward compatibility (not used by new backend)
-  createOrder: async (planId: string) =>
+  // Payment processing using the correct endpoint
+  createOrder: async (planId: string, paymentMethod: 'Click' | 'Payme' = 'Payme') =>
     http
       .post<{
         data: {
@@ -118,10 +118,9 @@ export const plansAPI = {
             totalPrice: number;
           };
         };
-      }>(`/orders`, {
-        productIds: [planId],
-        productType: 'uplift-plan',
-        paymentProvider: 'PAYME',
+      }>(`/user-plans/payment`, {
+        planId,
+        paymentMethod,
       })
       .then(res => res.data.data.session),
 };

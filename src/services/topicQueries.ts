@@ -9,8 +9,8 @@ export const useTopics = () => {
       const topics = await topicAPI.getAll();
       return topics;
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes (formerly cacheTime)
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000, 
     retry: 2,
     refetchOnWindowFocus: false,
   });
@@ -38,8 +38,8 @@ export const useTopic = (id: string) => {
       return allTopics.find(topic => topic._id === id);
     },
     enabled: !!id,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
+    staleTime: 5 * 60 * 1000, 
+    gcTime: 10 * 60 * 1000, 
     retry: 2,
     refetchOnWindowFocus: false,
   });

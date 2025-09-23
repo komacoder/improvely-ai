@@ -144,5 +144,38 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    font-variation-settings: normal;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Performance optimizations */
+  * {
+    box-sizing: border-box;
+  }
+
+  img, video {
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* Improved typography */
+  h1, h2, h3, h4, h5, h6 {
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: -0.025em;
+  }
+
+  p {
+    line-height: 1.6;
+  }
+
+  /* Code and monospace elements */
+  code, pre, kbd, samp {
+    font-family: 'JetBrains Mono', Consolas, 'Courier New', monospace;
+    font-feature-settings: 'liga' 1, 'calt' 1;
   }
 }

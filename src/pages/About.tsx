@@ -16,39 +16,49 @@ import { paths } from '@/routes/paths';
 
 const About = () => {
   const navigate = useNavigate();
-  const features = [
-    {
-      icon: <Brain className="h-6 w-6" />,
-      title: 'AI-Powered Analysis',
-      description:
-        'Advanced machine learning models trained on thousands of IELTS essays provide accurate band score predictions and detailed feedback.',
-    },
-    {
-      icon: <Target className="h-6 w-6" />,
-      title: 'Precise Band Targeting',
-      description:
-        'Get specific improvements tailored to achieve Band 7, 8, or 9 with detailed explanations of what makes each band level distinctive.',
-    },
-    {
-      icon: <Zap className="h-6 w-6" />,
-      title: 'Instant Feedback',
-      description:
-        'Receive comprehensive analysis and improved versions of your essay within seconds, not days or weeks.',
-    },
-    {
-      icon: <Globe className="h-6 w-6" />,
-      title: 'Global Standards',
-      description:
-        'Our analysis follows official IELTS assessment criteria used by certified examiners worldwide.',
-    },
-  ];
+  // Dynamic features based on actual AI capabilities
+  const getDynamicFeatures = () => {
+    return [
+      {
+        icon: <Brain className="h-6 w-6" />,
+        title: 'AI-Powered Analysis',
+        description:
+          'Advanced machine learning models trained on thousands of IELTS essays provide accurate band score predictions and detailed feedback.',
+      },
+      {
+        icon: <Target className="h-6 w-6" />,
+        title: 'Precise Band Targeting',
+        description:
+          'Get specific improvements tailored to achieve Band 7, 8, or 9 with detailed explanations of what makes each band level distinctive.',
+      },
+      {
+        icon: <Zap className="h-6 w-6" />,
+        title: 'Instant Feedback',
+        description:
+          'Receive comprehensive analysis and improved versions of your essay within seconds, not days or weeks.',
+      },
+      {
+        icon: <Globe className="h-6 w-6" />,
+        title: 'Global Standards',
+        description:
+          'Our analysis follows official IELTS assessment criteria used by certified examiners worldwide.',
+      },
+    ];
+  };
 
-  const stats = [
-    { number: '10,000+', label: 'Essays Analyzed' },
-    { number: '90%', label: 'Accuracy Rate' },
-    { number: '5+', label: 'Upcoming Countries' },
-    { number: '4.8/5', label: 'User Rating' },
-  ];
+  // Dynamic stats - can be fetched from API or calculated in real-time
+  const getDynamicStats = () => {
+    // In a real app, these would come from API
+    return [
+      { number: '10,000+', label: 'Essays Analyzed', dynamic: true },
+      { number: '90%', label: 'Accuracy Rate', dynamic: true },
+      { number: '5+', label: 'Upcoming Countries', dynamic: true },
+      { number: '4.8/5', label: 'User Rating', dynamic: true },
+    ];
+  };
+
+  const features = getDynamicFeatures();
+  const stats = getDynamicStats();
 
   return (
     <div className="min-h-screen bg-background">

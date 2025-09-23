@@ -31,9 +31,11 @@ interface EssayCreatorProps {
   isAnalyzing: boolean;
   onAnalyzeEssay: (submissionData: SendSubmission) => Promise<string>;
   onStartNewAnalysis?: () => void;
+  submissionId?: string | null;
+  activeSubmission?: any;
 }
 
-export const EssayCreator = ({ isAnalyzing, onAnalyzeEssay, onStartNewAnalysis }: EssayCreatorProps) => {
+export const EssayCreator = ({ isAnalyzing, onAnalyzeEssay, onStartNewAnalysis, submissionId, activeSubmission }: EssayCreatorProps) => {
   const navigate = useNavigate();
   const { data } = useGetTrial();
   const { user, authenticated } = useAuthContext();
@@ -75,6 +77,30 @@ export const EssayCreator = ({ isAnalyzing, onAnalyzeEssay, onStartNewAnalysis }
       setSelectedTopicId(savedData.selectedTopicId);
     }
   }, []);
+
+  // Load submission data when viewing a specific submission
+  useEffect(() => {
+    if (activeSubmission && submissionId) {
+      console.log('Loading submission data into EssayCreator:', activeSubmission);
+      setEssay(activeSubmission.body || '');
+      
+      // Set topic based on submission data
+      if (activeSubmission.topic === 'CUSTOM') {
+        setTopicSource('custom');
+        setCustomTopic(activeSubmission.customWritingQuestion || '');
+        setTopic(activeSubmission.customWritingQuestion || '');
+      } else {
+        setTopicSource('generated');
+        setTopic(activeSubmission.writing || '');
+      }
+      
+      // Set target score
+      if (activeSubmission.targetScore) {
+        // You might want to set this somewhere if you have a target score selector
+        console.log('Target score:', activeSubmission.targetScore);
+      }
+    }
+  }, [activeSubmission, submissionId]);
 
   useEffect(() => {
     if (!authenticated && (essay.trim() || topic || customTopic)) {
@@ -309,6 +335,7 @@ export const EssayCreator = ({ isAnalyzing, onAnalyzeEssay, onStartNewAnalysis }
                   size="sm"
                   className="bg-green-100 text-green-800 border-green-200 hover:bg-green-200"
                   onClick={() => handleBandButtonClick(7)}
+                  title={!authenticated ? "Login required to view Band 7 improvements" : "View Band 7 improvements"}
                 >
                   Band 7
                 </Button>
@@ -317,6 +344,7 @@ export const EssayCreator = ({ isAnalyzing, onAnalyzeEssay, onStartNewAnalysis }
                   size="sm"
                   className="bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-200"
                   onClick={() => handleBandButtonClick(8)}
+                  title={!authenticated ? "Login required to view Band 8 improvements" : "View Band 8 improvements"}
                 >
                   Band 8
                 </Button>
@@ -325,6 +353,7 @@ export const EssayCreator = ({ isAnalyzing, onAnalyzeEssay, onStartNewAnalysis }
                   size="sm"
                   className="bg-purple-100 text-purple-800 border-purple-200 hover:bg-purple-200"
                   onClick={() => handleBandButtonClick(9)}
+                  title={!authenticated ? "Login required to view Band 9 improvements" : "View Band 9 improvements"}
                 >
                   Band 9
                 </Button>
@@ -340,14 +369,14 @@ export const EssayCreator = ({ isAnalyzing, onAnalyzeEssay, onStartNewAnalysis }
                 <div>
                   <h3 className="text-lg font-semibold mb-2">
                     {!authenticated
-                      ? 'Login Required to Analyze'
+                      ? 'Ready to Analyze'
                       : finalCanAnalyze
                       ? 'Ready to Analyze'
                       : 'Upgrade Required'}
                   </h3>
                   <p className="text-muted-foreground mb-4">
                     {!authenticated
-                      ? 'Write your essay and click "Analyze Essay" to save it and login for analysis.'
+                      ? 'Write your IELTS Task 2 essay on the left and click "Analyze Essay" to get started. You will be prompted to login when needed.'
                       : finalCanAnalyze
                       ? 'Enter your IELTS Task 2 essay on the left and click "Analyze Essay" to get started.'
                       : "You've used all your essay submissions. Upgrade to continue analyzing essays."}
@@ -427,7 +456,7 @@ export const EssayCreator = ({ isAnalyzing, onAnalyzeEssay, onStartNewAnalysis }
                         ? analyzeEssay
                         : handleGetPremium
                     }
-                    disabled={isAnalyzing}
+                    disabled={isAnalyzing || (submissionId && activeSubmission)}
                     className={
                       !authenticated || finalCanAnalyze
                         ? 'bg-gradient-primary hover:opacity-90'
@@ -435,7 +464,9 @@ export const EssayCreator = ({ isAnalyzing, onAnalyzeEssay, onStartNewAnalysis }
                     }
                     variant="default"
                   >
-                    {!authenticated ? (
+                    {submissionId && activeSubmission ? (
+                      'Viewing Existing Analysis'
+                    ) : !authenticated ? (
                       'Analyze Essay & Login'
                     ) : !finalCanAnalyze ? (
                       <>

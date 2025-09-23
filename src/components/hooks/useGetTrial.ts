@@ -5,7 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 export const useGetTrial = () => {
   const { user } = useAuthContext();
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['trial'],
+    queryKey: ['user-trial'],
     enabled: !!user,
     queryFn: async () => {
       try {
@@ -90,6 +90,10 @@ export const useGetTrial = () => {
       }
     },
     retry: false,
+    staleTime: 0, // Always consider stale
+    gcTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
   });
 
   return { data, isLoading, isError };

@@ -125,3 +125,21 @@ export const useAnalyzeSubmission = () => {
     },
   });
 };
+
+export const useGenerateImprovedVersion = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (submissionId: string) => {
+      const response = await essayAPI.generateImprovedVersion(submissionId);
+      return response;
+    },
+    onSuccess: async (data, submissionId) => {
+      await queryClient.invalidateQueries({ queryKey: ['submissions'] });
+      await queryClient.invalidateQueries({ queryKey: ['latest-submission'] });
+      await queryClient.invalidateQueries({ queryKey: ['submission', submissionId] });
+    },
+    onError: error => {
+      console.error('Improved version generation error:', error);
+    },
+  });
+};

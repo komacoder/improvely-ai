@@ -14,6 +14,7 @@ import { Plan, useCreateOrderPayme } from '@/modules/plan';
 import { useCreateOrderClick } from '@/modules/plan/hooks/usePlans';
 import { useGetPlans } from '@/services/planQueries';
 import { useGetTrial } from '@/components/hooks/useGetTrial';
+import { useUserProfile } from '@/services/paymentMutations';
 import { Check, Crown, Star, CreditCard, Smartphone } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -23,11 +24,12 @@ const Pricing = () => {
   const { data, isLoading } = useGetPlans();
   const { user } = useAuthContext();
   const { data: userPlanData } = useGetTrial();
+  const { data: userProfileData } = useUserProfile();
   const navigate = useNavigate();
   const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
 
-  const { mutate: createOrder, isPending, variables } = useCreateOrderPayme();
+  const { mutate: createOrder, isPending } = useCreateOrderPayme();
   const {
     mutate: createOrderClick,
     isPending: isPendingClick,
@@ -85,12 +87,48 @@ const Pricing = () => {
     }
   };
 
+
+  // Debug: Log user profile data
+  console.log('User Profile Data:', userProfileData);
+  console.log('User Plan Data:', userPlanData);
+
+  // Manual refresh function for testing
+  const handleRefreshData = () => {
+    window.location.reload();
+  };
+
   const plans = plansData.map((plan) => {
-    const isCurrentPlan = userPlanData ? 
-      (plan.title === userPlanData.plan) : 
-      (plan.price === 0); // If no user data, freemium is default current plan
+    // Get user's current plan from profile data
+    const userCurrentPlan = userProfileData?.data?.userPlan;
+    const userTrialData = userPlanData;
+    
+    // Check if this is the current plan
+    const isCurrentPlan = userCurrentPlan ? 
+      (plan._id === userCurrentPlan.plan._id) : 
+      (plan.price === 0 && !userTrialData?.hasPaidPlan); // Freemium is current only if no paid plan
+    
+    console.log(`Plan ${plan.title}:`, {
+      planId: plan._id,
+      userPlanId: userCurrentPlan?.plan?._id,
+      userTrialPlan: userTrialData?.plan,
+      isCurrentPlan,
+      hasPaidPlan: userCurrentPlan?.hasPaidPlan || userTrialData?.hasPaidPlan,
+      submissionsUsed: userCurrentPlan?.submissionsUsed || userTrialData?.submissionsUsed,
+      submissionsLimit: userCurrentPlan?.submissionsLimit || userTrialData?.submissionsLimit
+    });
     
     const isFreemium = plan.price === 0;
+    const hasPaidPlan = userCurrentPlan?.hasPaidPlan || userTrialData?.hasPaidPlan || false;
+    
+    // Determine button text based on plan status
+    let buttonText = 'Get Premium';
+    if (isCurrentPlan) {
+      buttonText = 'Current Plan';
+    } else if (isFreemium) {
+      buttonText = 'Available';
+    } else if (hasPaidPlan && plan.price > 0 && !isCurrentPlan) {
+      buttonText = 'Upgrade';
+    }
     
     return {
       id: plan._id,
@@ -100,11 +138,11 @@ const Pricing = () => {
       description: plan.description,
       icon: plan.type === 'FREE' ? <Star className="h-6 w-6" /> : <Crown className="h-6 w-6" />,
       features: plan.features,
-      buttonText: isCurrentPlan ? 'Current Plan' : (isFreemium ? 'Available' : 'Get Premium'),
+      buttonText,
       variant: isCurrentPlan ? 'outline' as const : (isFreemium ? 'secondary' as const : 'default' as const),
       popular: plan.isPopular,
       current: isCurrentPlan,
-      isLoading: (isPending && variables === plan._id) || (isPendingClick && variablesClick === plan._id),
+      isLoading: isPending || (isPendingClick && variablesClick === plan._id),
       plan: plan, // Keep reference to original plan data
     };
   });
@@ -242,26 +280,30 @@ const Pricing = () => {
               {selectedPlan?.price} {selectedPlan?.currency})
             </DialogDescription>
           </DialogHeader>
-          <div className="flex justify-center gap-4">
-            <button
-              className="border-2 h-12 w-24 rounded-lg border-[#21C55D] flex items-center justify-center "
-              onClick={handlePaymePayment}
-              disabled={isPending}
-            >
-              <Payme />
-              {isPending && <span className="ml-2">Processing...</span>}
-            </button>
-            <button
-              className="border-2 w-24 h-12 rounded-lg border-[#21C55D] flex items-center justify-center"
-              onClick={handleClickPayment}
-              disabled={isPendingClick}
-            >
-              <Click />
-              {isPendingClick && <span className="ml-2">Processing...</span>}
-            </button>
+          <div className="flex flex-col gap-4">
+            <div className="flex justify-center gap-4">
+              <button
+                className="border-2 h-12 w-24 rounded-lg border-[#21C55D] flex items-center justify-center "
+                onClick={handlePaymePayment}
+                disabled={isPending}
+              >
+                <Payme />
+                {isPending && <span className="ml-2">Processing...</span>}
+              </button>
+              <button
+                className="border-2 w-24 h-12 rounded-lg border-[#21C55D] flex items-center justify-center"
+                onClick={handleClickPayment}
+                disabled={isPendingClick}
+              >
+                <Click />
+                {isPendingClick && <span className="ml-2">Processing...</span>}
+              </button>
+            </div>
+            
           </div>
         </DialogContent>
       </Dialog>
+
     </div>
   );
 };

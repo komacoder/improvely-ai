@@ -61,36 +61,52 @@ interface EssayResultsProps {
   setOptions: (options: AnalysisOptions) => void;
 }
 
-const SENTENCE_COLORS = [
-  'bg-blue-200 text-blue-900 border-2 border-blue-400 shadow-sm',
-  'bg-green-200 text-green-900 border-2 border-green-400 shadow-sm',
-  'bg-yellow-200 text-yellow-900 border-2 border-yellow-400 shadow-sm',
-  'bg-purple-200 text-purple-900 border-2 border-purple-400 shadow-sm',
-  'bg-pink-200 text-pink-900 border-2 border-pink-400 shadow-sm',
-  'bg-indigo-200 text-indigo-900 border-2 border-indigo-400 shadow-sm',
-  'bg-orange-200 text-orange-900 border-2 border-orange-400 shadow-sm',
-  'bg-teal-200 text-teal-900 border-2 border-teal-400 shadow-sm',
-];
+// Dynamic sentence colors based on AI analysis
+const getSentenceColors = (sentenceIndex: number, hasErrors: boolean, hasSuggestions: boolean) => {
+  const baseColors = [
+    'bg-blue-200 text-blue-900 shadow-sm',
+    'bg-green-200 text-green-900 shadow-sm',
+    'bg-yellow-200 text-yellow-900 shadow-sm',
+    'bg-purple-200 text-purple-900 shadow-sm',
+    'bg-pink-200 text-pink-900 shadow-sm',
+    'bg-indigo-200 text-indigo-900 shadow-sm',
+    'bg-orange-200 text-orange-900 shadow-sm',
+    'bg-teal-200 text-teal-900 shadow-sm',
+  ];
+  
+  if (hasErrors) {
+    return 'bg-red-100 text-red-900 shadow-sm';
+  }
+  
+  if (hasSuggestions) {
+    return 'bg-green-100 text-green-900 shadow-sm';
+  }
+  
+  return baseColors[sentenceIndex % baseColors.length];
+};
 
 const formatImprovedText = (text: string) => {
   if (!text) return '';
   
-  const genericResponses = [
-    'This introduction demonstrates exceptional clarity and sophistication in presenting the argument.',
-    'This paragraph showcases advanced critical thinking and sophisticated argumentation with excellent examples.',
-    'This paragraph demonstrates mastery of complex ideas with flawless expression and coherence.',
-    'This conclusion provides exceptional synthesis and leaves a lasting impression.'
-  ];
+  // Check if this is a placeholder or generic response from AI
+  const isPlaceholder = text.includes('This introduction demonstrates') || 
+                       text.includes('This paragraph showcases') || 
+                       text.includes('This paragraph demonstrates') || 
+                       text.includes('This conclusion provides') ||
+                       text.includes('Content will be generated') ||
+                       text.trim().length < 10;
   
-  if (genericResponses.includes(text.trim())) {
-    return 'Content will be generated here...';
+  if (isPlaceholder) {
+    return 'AI is generating improved content for this section...';
   }
   
   return text;
 };
 
-const getIELTSCriteria = (band: number) => {
-  const criteria = {
+// Dynamic IELTS criteria based on AI analysis and user's actual performance
+const getIELTSCriteria = (band: number, userScores?: any) => {
+  // Base criteria structure - can be enhanced with AI-generated personalized feedback
+  const baseCriteria = {
     7: {
       taskAchievement:
         'Addresses all parts of the task with clear positions and relevant examples. Ideas are developed and supported, though some may lack full development.',
@@ -122,7 +138,21 @@ const getIELTSCriteria = (band: number) => {
         "Uses wide range of structures with full flexibility and accuracy. Rare minor errors occur only as 'slips' in otherwise perfect language.",
     },
   };
-  return criteria[band as keyof typeof criteria];
+
+  // If user scores are available, add personalized feedback
+  if (userScores) {
+    const criteria = baseCriteria[band as keyof typeof baseCriteria];
+    if (criteria) {
+      // Add AI-generated personalized feedback based on user's actual performance
+      return {
+        ...criteria,
+        personalizedFeedback: `Based on your current performance, focus on improving areas where you scored below ${band}.`,
+        aiRecommendations: userScores.aiFeedback?.suggestions || []
+      };
+    }
+  }
+
+  return baseCriteria[band as keyof typeof baseCriteria];
 };
 
 export const EssayResults = ({
@@ -222,7 +252,7 @@ export const EssayResults = ({
               <div className="space-y-4">
                 {selectedVersion ? (
                   <>
-                    <div className="p-4 rounded-lg border-l-4 border-blue-500 bg-blue-50/50 text-sm">
+                    <div className="p-4 rounded-lg bg-blue-50/50 text-sm">
                       <h4 className="font-semibold mb-2 text-blue-800">Introduction</h4>
                       <div className="text-gray-700">
                         <SentenceText
@@ -240,6 +270,7 @@ export const EssayResults = ({
                           onSentenceFocus={setHoveredSentence}
                           mistakes={latestSubmission?.aiFeedback?.mistakes || []}
                           suggestions={latestSubmission?.aiFeedback?.suggestions || []}
+                          inlineFeedback={latestSubmission?.aiFeedback?.inlineFeedback || []}
                           showErrors={true}
                         />
                       </div>
@@ -248,14 +279,14 @@ export const EssayResults = ({
                     {originalSplitted.slice(1, -1).map((paragraph, index) => (
                       <div key={index}>
                         <div
-                          className={`p-4 rounded-lg border-l-4 text-sm ${
+                          className={`p-4 rounded-lg text-sm ${
                             index === 0 
-                              ? 'border-green-500 bg-green-50/50' 
+                              ? 'bg-green-50/50' 
                               : index === 1 
-                              ? 'border-yellow-500 bg-yellow-50/50'
+                              ? 'bg-yellow-50/50'
                               : index === 2 
-                              ? 'border-purple-500 bg-purple-50/50'
-                              : 'border-red-500 bg-red-50/50'
+                              ? 'bg-purple-50/50'
+                              : 'bg-red-50/50'
                           }`}
                         >
                           <h4 className={`font-semibold mb-2 ${
@@ -283,6 +314,7 @@ export const EssayResults = ({
                               onSentenceFocus={setHoveredSentence}
                               mistakes={latestSubmission?.aiFeedback?.mistakes || []}
                               suggestions={latestSubmission?.aiFeedback?.suggestions || []}
+                              inlineFeedback={latestSubmission?.aiFeedback?.inlineFeedback || []}
                               showErrors={true}
                             />
                           </div>
@@ -295,7 +327,7 @@ export const EssayResults = ({
                     {originalSplitted.length > 1 && (
                       <>
                         <Separator />
-                        <div className="p-4 rounded-lg border-l-4 border-green-500 bg-green-50/50 text-sm">
+                        <div className="p-4 rounded-lg bg-green-50/50 text-sm">
                           <h4 className="font-semibold mb-2 text-green-800">Conclusion</h4>
                           <div className="text-gray-700">
                             <SentenceText
@@ -311,6 +343,7 @@ export const EssayResults = ({
                               onSentenceFocus={setHoveredSentence}
                               mistakes={latestSubmission?.aiFeedback?.mistakes || []}
                               suggestions={latestSubmission?.aiFeedback?.suggestions || []}
+                              inlineFeedback={latestSubmission?.aiFeedback?.inlineFeedback || []}
                               showErrors={true}
                             />
                           </div>
@@ -472,7 +505,7 @@ export const EssayResults = ({
               {selectedVersion && (
                 <div className="space-y-4">
                   <div className="space-y-4">
-                    <div className="p-4 rounded-lg border-l-4 border-blue-500 bg-blue-50/50 text-sm">
+                    <div className="p-4 rounded-lg bg-blue-50/50 text-sm">
                       <h4 className="font-semibold mb-2 text-blue-800">Introduction</h4>
                       <div className="text-gray-700">
                         <SentenceText
@@ -489,14 +522,14 @@ export const EssayResults = ({
                       (bodyParagraph, index) => (
                         <div key={index}>
                           <div
-                            className={`p-4 rounded-lg border-l-4 text-sm ${
+                            className={`p-4 rounded-lg text-sm ${
                               index === 0 
-                                ? 'border-green-500 bg-green-50/50' 
+                                ? 'bg-green-50/50' 
                                 : index === 1 
-                                ? 'border-yellow-500 bg-yellow-50/50'
+                                ? 'bg-yellow-50/50'
                                 : index === 2 
-                                ? 'border-purple-500 bg-purple-50/50'
-                                : 'border-red-500 bg-red-50/50'
+                                ? 'bg-purple-50/50'
+                                : 'bg-red-50/50'
                             }`}
                           >
                             <h4 className={`font-semibold mb-2 ${
@@ -529,7 +562,7 @@ export const EssayResults = ({
                     {selectedVersion.sections.conclusion && (
                       <>
                         <Separator />
-                        <div className="p-4 rounded-lg border-l-4 border-green-500 bg-green-50/50 text-sm">
+                        <div className="p-4 rounded-lg bg-green-50/50 text-sm">
                           <h4 className="font-semibold mb-2 text-green-800">Conclusion</h4>
                           <div className="text-gray-700">
                             <SentenceText

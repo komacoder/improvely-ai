@@ -3,6 +3,16 @@ import { parseSentences } from '@/lib/sentenceUtils';
 import { SentenceWrapper } from './SentenceWrapper';
 import { SuggestionHighlighter } from './SuggestionHighlighter';
 
+interface InlineFeedback {
+  originalText: string;
+  startIndex: number;
+  endIndex: number;
+  category: string;
+  explanation: string;
+  suggestion: string;
+  suggestionExplanation: string;
+}
+
 interface SentenceTextProps {
   text: string;
   paragraphId: string;
@@ -12,6 +22,7 @@ interface SentenceTextProps {
   className?: string;
   mistakes?: string[];
   suggestions?: string[];
+  inlineFeedback?: InlineFeedback[];
   showErrors?: boolean;
 }
 
@@ -24,6 +35,7 @@ export const SentenceText: React.FC<SentenceTextProps> = memo(({
   className = '',
   mistakes = [],
   suggestions = [],
+  inlineFeedback = [],
   showErrors = false
 }) => {
   const sentences = useMemo(() => {
@@ -38,6 +50,7 @@ export const SentenceText: React.FC<SentenceTextProps> = memo(({
             text={text}
             mistakes={mistakes}
             suggestions={suggestions}
+            inlineFeedback={inlineFeedback}
           />
         </span>
       );
@@ -75,6 +88,7 @@ export const SentenceText: React.FC<SentenceTextProps> = memo(({
               onFocus={onSentenceFocus}
               mistakes={mistakes}
               suggestions={suggestions}
+              inlineFeedback={inlineFeedback}
               showErrors={showErrors}
             />
             {index < sentences.length - 1 && ' '}

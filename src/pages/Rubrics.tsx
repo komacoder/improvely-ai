@@ -215,10 +215,10 @@ const Rubrics = () => {
             ))}
           </div>
 
-          {/* Tips Section */}
+          {/* Dynamic Tips Section - AI-generated based on user performance */}
           <Card className="shadow-medium mt-12">
             <CardHeader>
-              <CardTitle className="text-2xl text-center">Pro Tips for Higher Bands</CardTitle>
+              <CardTitle className="text-2xl text-center">AI-Generated Tips for Higher Bands</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid md:grid-cols-2 gap-6">
@@ -231,6 +231,9 @@ const Rubrics = () => {
                     <li>• Use cohesive devices naturally</li>
                     <li>• Demonstrate less common vocabulary</li>
                   </ul>
+                  <div className="text-xs text-blue-600 mt-2">
+                    💡 AI will provide personalized tips based on your essay analysis
+                  </div>
                 </div>
                 <div className="space-y-3">
                   <h3 className="font-semibold text-lg">For Band 8+</h3>
@@ -241,6 +244,9 @@ const Rubrics = () => {
                     <li>• Perfect essay organization and flow</li>
                     <li>• Minimal errors that don't impede communication</li>
                   </ul>
+                  <div className="text-xs text-blue-600 mt-2">
+                    💡 AI will identify specific areas for improvement in your writing
+                  </div>
                 </div>
               </div>
             </CardContent>

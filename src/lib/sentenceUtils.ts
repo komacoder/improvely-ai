@@ -124,44 +124,44 @@ const extractSentenceIndex = (sentenceId: string): number => {
  */
 const SENTENCE_COLORS = [
   {
-    base: 'bg-gray-50 hover:bg-blue-100 border border-gray-200 text-gray-700',
-    active: 'bg-blue-100 border border-blue-300 text-blue-900',
-    highlight: 'bg-blue-200 border border-blue-400 text-blue-900 shadow-md'
+    base: 'bg-gray-50 hover:bg-blue-100 text-gray-700',
+    active: 'bg-blue-100 text-blue-900',
+    highlight: 'bg-blue-200 text-blue-900 shadow-md'
   },
   {
-    base: 'bg-gray-50 hover:bg-green-100 border border-gray-200 text-gray-700',
-    active: 'bg-green-100 border border-green-300 text-green-900',
-    highlight: 'bg-green-200 border border-green-400 text-green-900 shadow-md'
+    base: 'bg-gray-50 hover:bg-green-100 text-gray-700',
+    active: 'bg-green-100 text-green-900',
+    highlight: 'bg-green-200 text-green-900 shadow-md'
   },
   {
-    base: 'bg-gray-50 hover:bg-yellow-100 border border-gray-200 text-gray-700',
-    active: 'bg-yellow-100 border border-yellow-300 text-yellow-900',
-    highlight: 'bg-yellow-200 border border-yellow-400 text-yellow-900 shadow-md'
+    base: 'bg-gray-50 hover:bg-yellow-100 text-gray-700',
+    active: 'bg-yellow-100 text-yellow-900',
+    highlight: 'bg-yellow-200 text-yellow-900 shadow-md'
   },
   {
-    base: 'bg-gray-50 hover:bg-purple-100 border border-gray-200 text-gray-700',
-    active: 'bg-purple-100 border border-purple-300 text-purple-900',
-    highlight: 'bg-purple-200 border border-purple-400 text-purple-900 shadow-md'
+    base: 'bg-gray-50 hover:bg-purple-100 text-gray-700',
+    active: 'bg-purple-100 text-purple-900',
+    highlight: 'bg-purple-200 text-purple-900 shadow-md'
   },
   {
-    base: 'bg-gray-50 hover:bg-pink-100 border border-gray-200 text-gray-700',
-    active: 'bg-pink-100 border border-pink-300 text-pink-900',
-    highlight: 'bg-pink-200 border border-pink-400 text-pink-900 shadow-md'
+    base: 'bg-gray-50 hover:bg-pink-100 text-gray-700',
+    active: 'bg-pink-100 text-pink-900',
+    highlight: 'bg-pink-200 text-pink-900 shadow-md'
   },
   {
-    base: 'bg-gray-50 hover:bg-indigo-100 border border-gray-200 text-gray-700',
-    active: 'bg-indigo-100 border border-indigo-300 text-indigo-900',
-    highlight: 'bg-indigo-200 border border-indigo-400 text-indigo-900 shadow-md'
+    base: 'bg-gray-50 hover:bg-indigo-100 text-gray-700',
+    active: 'bg-indigo-100 text-indigo-900',
+    highlight: 'bg-indigo-200 text-indigo-900 shadow-md'
   },
   {
-    base: 'bg-gray-50 hover:bg-orange-100 border border-gray-200 text-gray-700',
-    active: 'bg-orange-100 border border-orange-300 text-orange-900',
-    highlight: 'bg-orange-200 border border-orange-400 text-orange-900 shadow-md'
+    base: 'bg-gray-50 hover:bg-orange-100 text-gray-700',
+    active: 'bg-orange-100 text-orange-900',
+    highlight: 'bg-orange-200 text-orange-900 shadow-md'
   },
   {
-    base: 'bg-gray-50 hover:bg-teal-100 border border-gray-200 text-gray-700',
-    active: 'bg-teal-100 border border-teal-300 text-teal-900',
-    highlight: 'bg-teal-200 border border-teal-400 text-teal-900 shadow-md'
+    base: 'bg-gray-50 hover:bg-teal-100 text-gray-700',
+    active: 'bg-teal-100 text-teal-900',
+    highlight: 'bg-teal-200 text-teal-900 shadow-md'
   }
 ];
 

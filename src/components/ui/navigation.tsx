@@ -52,7 +52,7 @@ export const Navigation = () => {
                 variant="outline"
                 size="sm"
                 onClick={handleLogout}
-                className="ml-4 flex items-center gap-2"
+                className="ml-4 flex items-center gap-2 text-red-500"
               >
                 <LogOut className="h-4 w-4" />
                 Logout

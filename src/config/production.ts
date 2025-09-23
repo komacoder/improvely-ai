@@ -1,4 +1,3 @@
-// Production configuration
 export const productionConfig = {
   api: {
     baseUrl: process.env.VITE_API_BASE_URL || 'https://your-production-api.com',

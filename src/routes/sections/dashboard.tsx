@@ -1,9 +1,20 @@
 import { RouteObject } from 'react-router-dom';
+import { lazy, Suspense } from 'react';
 
-import Index from '@/pages/Index';
-import IeltsWriting from '@/pages/IeltsWriting';
-import MySubmissions from '@/pages/MySubmissions';
 import { AuthGuard } from '@/auth/guard';
+import { Spinner } from '@/components/Spinner';
+
+// Lazy load pages for better performance
+const Index = lazy(() => import('@/pages/Index'));
+const IeltsWriting = lazy(() => import('@/pages/IeltsWriting'));
+const MySubmissions = lazy(() => import('@/pages/MySubmissions'));
+
+// Loading component
+const PageLoader = () => (
+  <div className="flex h-screen w-full items-center justify-center bg-background">
+    <Spinner />
+  </div>
+);
 
 export const dashboard: RouteObject[] = [
   {
@@ -12,9 +23,9 @@ export const dashboard: RouteObject[] = [
       {
         path: '',
         element: (
-          <AuthGuard>
+          <Suspense fallback={<PageLoader />}>
             <Index />
-          </AuthGuard>
+          </Suspense>
         ),
       },
     ],
@@ -25,9 +36,9 @@ export const dashboard: RouteObject[] = [
       {
         path: '',
         element: (
-          <AuthGuard>
+          <Suspense fallback={<PageLoader />}>
             <IeltsWriting />
-          </AuthGuard>
+          </Suspense>
         ),
       },
     ],
@@ -39,7 +50,9 @@ export const dashboard: RouteObject[] = [
         path: '',
         element: (
           <AuthGuard>
-            <MySubmissions />
+            <Suspense fallback={<PageLoader />}>
+              <MySubmissions />
+            </Suspense>
           </AuthGuard>
         ),
       },

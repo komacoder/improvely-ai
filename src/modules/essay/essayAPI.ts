@@ -42,7 +42,6 @@ export const essayAPI = {
     );
     // Some endpoints return { data: [...] }, others may return pagination
     // Normalize to an array for existing consumers
-    // @ts-expect-error runtime shape may differ; we handle both
     return (response.data?.data as unknown) || response.data;
   },
 
@@ -91,7 +90,11 @@ export const essayAPI = {
 
   // AI Analysis
   analyzeSubmission: async (id: string) => {
-    const response = await http.post(`ielts-ai/analyze/${id}`);
+    const response = await http.post(`ielts-ai/analyze/${id}`, {});
+    return response.data;
+  },
+  generateImprovedVersion: async (id: string) => {
+    const response = await http.post(`ielts-ai/improved-version/${id}`, {});
     return response.data;
   },
 };
