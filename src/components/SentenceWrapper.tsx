@@ -4,8 +4,8 @@ import { SuggestionHighlighter } from './SuggestionHighlighter';
 
 interface InlineFeedback {
   originalText: string;
-  startIndex: number;
-  endIndex: number;
+  startIndex?: number;
+  endIndex?: number;
   category: string;
   explanation: string;
   suggestion: string;
@@ -68,14 +68,20 @@ export const SentenceWrapper: React.FC<SentenceWrapperProps> = memo(({
   }, [dataId]);
   
   const handleMouseEnter = useCallback(() => {
-    setGlobalHoveredDataId(dataId);
-    onHover(sentence.id);
-  }, [dataId, onHover, sentence.id]);
+    // Only set global hover if we're not showing errors (to avoid interfering with SuggestionHighlighter)
+    if (!showErrors || (mistakes.length === 0 && suggestions.length === 0 && inlineFeedback.length === 0)) {
+      setGlobalHoveredDataId(dataId);
+      onHover(sentence.id);
+    }
+  }, [dataId, onHover, sentence.id, showErrors, mistakes.length, suggestions.length, inlineFeedback.length]);
   
   const handleMouseLeave = useCallback(() => {
-    setGlobalHoveredDataId(null);
-    onHover(null);
-  }, [onHover]);
+    // Only clear global hover if we're not showing errors
+    if (!showErrors || (mistakes.length === 0 && suggestions.length === 0 && inlineFeedback.length === 0)) {
+      setGlobalHoveredDataId(null);
+      onHover(null);
+    }
+  }, [onHover, showErrors, mistakes.length, suggestions.length, inlineFeedback.length]);
   
   const handleFocus = useCallback(() => {
     onFocus(sentence.id);

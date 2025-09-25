@@ -75,7 +75,7 @@ const getSentenceColors = (sentenceIndex: number, hasErrors: boolean, hasSuggest
   ];
   
   if (hasErrors) {
-    return 'bg-red-100 text-red-900 shadow-sm';
+    return 'bg-red-50 text-red-800 shadow-sm';
   }
   
   if (hasSuggestions) {
@@ -408,36 +408,47 @@ export const EssayResults = ({
               })}
             </div>
             
-            {/* Interactive Feedback Guide */}
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mt-4">
-              <div className="flex items-center gap-2 mb-3">
-                <AlertCircle className="h-4 w-4 text-blue-600" />
-                <span className="text-sm font-semibold text-gray-800">Interactive Feedback</span>
+            {/* Mistakes and Suggestions */}
+            {latestSubmission?.aiFeedback && (
+              <div className="mt-4 space-y-4">
+                {/* Mistakes */}
+                {latestSubmission.aiFeedback.mistakes && latestSubmission.aiFeedback.mistakes.length > 0 && (
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <AlertCircle className="h-4 w-4 text-red-600" />
+                      <span className="text-sm font-semibold text-red-800">Mistakes ({latestSubmission.aiFeedback.mistakes.length})</span>
+                    </div>
+                    <ul className="space-y-2 text-sm text-red-700">
+                      {latestSubmission.aiFeedback.mistakes.map((mistake, index) => (
+                        <li key={index} className="flex items-start gap-2">
+                          <span className="text-red-500 mt-1">•</span>
+                          <span>{mistake}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Suggestions */}
+                {latestSubmission.aiFeedback.suggestions && latestSubmission.aiFeedback.suggestions.length > 0 && (
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Lightbulb className="h-4 w-4 text-green-600" />
+                      <span className="text-sm font-semibold text-green-800">Suggestions ({latestSubmission.aiFeedback.suggestions.length})</span>
+                    </div>
+                    <ul className="space-y-2 text-sm text-green-700">
+                      {latestSubmission.aiFeedback.suggestions.map((suggestion, index) => (
+                        <li key={index} className="flex items-start gap-2">
+                          <span className="text-green-500 mt-1">•</span>
+                          <span>{suggestion}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
               </div>
-              
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-3">
-                <div className="flex items-center gap-2 text-xs">
-                  <span className="w-3 h-3 bg-red-100 border border-red-400 rounded"></span>
-                  <span className="text-gray-700">Vocabulary & Grammar</span>
-                </div>
-                <div className="flex items-center gap-2 text-xs">
-                  <span className="w-3 h-3 bg-red-100 border border-red-400 rounded"></span>
-                  <span className="text-gray-700">Coherence Issues</span>
-                </div>
-                <div className="flex items-center gap-2 text-xs">
-                  <span className="w-3 h-3 bg-purple-200 border border-purple-500 rounded"></span>
-                  <span className="text-gray-700">Positive Tips</span>
-                </div>
-                <div className="flex items-center gap-2 text-xs">
-                  <span className="w-3 h-3 bg-blue-200 border border-blue-500 rounded"></span>
-                  <span className="text-gray-700">Good Coherence</span>
-                </div>
-              </div>
-              
-              <p className="text-xs text-gray-600">
-                Hover over highlighted text to see detailed feedback and suggestions.
-              </p>
-            </div>
+            )}
           </CardContent>
         </Card>
 

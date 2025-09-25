@@ -5,8 +5,8 @@ import { SuggestionHighlighter } from './SuggestionHighlighter';
 
 interface InlineFeedback {
   originalText: string;
-  startIndex: number;
-  endIndex: number;
+  startIndex?: number;
+  endIndex?: number;
   category: string;
   explanation: string;
   suggestion: string;
