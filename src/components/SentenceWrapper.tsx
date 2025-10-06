@@ -23,9 +23,8 @@ interface SentenceWrapperProps {
   onHover: (sentenceId: string | null) => void;
   onFocus: (sentenceId: string | null) => void;
   className?: string;
-  mistakes?: string[];
-  suggestions?: string[];
   inlineFeedback?: InlineFeedback[];
+  improvedTextsnippets?: InlineFeedback[];
   showErrors?: boolean;
 }
 
@@ -37,6 +36,39 @@ const setGlobalHoveredDataId = (dataId: string | null) => {
   hoverListeners.forEach(listener => listener(dataId));
 };
 
+// Helper function to get corresponding dataId for cross-highlighting
+const getCorrespondingDataId = (dataId: string, isOriginal: boolean): string => {
+  if (!dataId) return '';
+  
+  // Extract the sentence index from the dataId
+  const parts = dataId.split('-');
+  if (parts.length < 2) return '';
+  
+  const sentenceIndex = parts[parts.length - 1];
+  const paragraphType = parts.slice(0, -1).join('-');
+  
+  // Map between original and improved versions
+  if (isOriginal) {
+    // Convert original to improved
+    if (paragraphType.includes('original')) {
+      const improvedType = paragraphType.replace('original', 'improved');
+      const result = `${improvedType}-${sentenceIndex}`;
+      console.log(`Cross-highlight mapping: ${dataId} -> ${result}`);
+      return result;
+    }
+  } else {
+    // Convert improved to original
+    if (paragraphType.includes('improved')) {
+      const originalType = paragraphType.replace('improved', 'original');
+      const result = `${originalType}-${sentenceIndex}`;
+      console.log(`Cross-highlight mapping: ${dataId} -> ${result}`);
+      return result;
+    }
+  }
+  
+  return dataId;
+};
+
 export const SentenceWrapper: React.FC<SentenceWrapperProps> = memo(({
   sentence,
   dataId,
@@ -44,9 +76,8 @@ export const SentenceWrapper: React.FC<SentenceWrapperProps> = memo(({
   onHover,
   onFocus,
   className = '',
-  mistakes = [],
-  suggestions = [],
   inlineFeedback = [],
+  improvedTextsnippets = [],
   showErrors = false
 }) => {
   const baseColors = getSentenceColors(sentence.index);
@@ -55,12 +86,28 @@ export const SentenceWrapper: React.FC<SentenceWrapperProps> = memo(({
   
   useEffect(() => {
     const listener = (hoveredDataId: string | null) => {
-      setIsGloballyHovered(hoveredDataId === dataId);
+      // Check if this sentence should be highlighted based on cross-highlighting
+      const isOriginal = dataId.includes('original');
+      const correspondingId = getCorrespondingDataId(hoveredDataId || '', !isOriginal);
+      const shouldHighlight = hoveredDataId === dataId || correspondingId === dataId;
+      
+      console.log(`Hover listener for ${dataId}:`, {
+        hoveredDataId,
+        isOriginal,
+        correspondingId,
+        shouldHighlight
+      });
+      
+      setIsGloballyHovered(shouldHighlight);
     };
     
     hoverListeners.add(listener);
     
-    setIsGloballyHovered(globalHoveredDataId === dataId);
+    // Check initial state
+    const isOriginal = dataId.includes('original');
+    const correspondingId = getCorrespondingDataId(globalHoveredDataId || '', !isOriginal);
+    const shouldHighlight = globalHoveredDataId === dataId || correspondingId === dataId;
+    setIsGloballyHovered(shouldHighlight);
     
     return () => {
       hoverListeners.delete(listener);
@@ -68,20 +115,16 @@ export const SentenceWrapper: React.FC<SentenceWrapperProps> = memo(({
   }, [dataId]);
   
   const handleMouseEnter = useCallback(() => {
-    // Only set global hover if we're not showing errors (to avoid interfering with SuggestionHighlighter)
-    if (!showErrors || (mistakes.length === 0 && suggestions.length === 0 && inlineFeedback.length === 0)) {
-      setGlobalHoveredDataId(dataId);
-      onHover(sentence.id);
-    }
-  }, [dataId, onHover, sentence.id, showErrors, mistakes.length, suggestions.length, inlineFeedback.length]);
+    // Always allow hover for cross-highlighting, but be careful with SuggestionHighlighter
+    setGlobalHoveredDataId(dataId);
+    onHover(sentence.id);
+  }, [dataId, onHover, sentence.id]);
   
   const handleMouseLeave = useCallback(() => {
-    // Only clear global hover if we're not showing errors
-    if (!showErrors || (mistakes.length === 0 && suggestions.length === 0 && inlineFeedback.length === 0)) {
-      setGlobalHoveredDataId(null);
-      onHover(null);
-    }
-  }, [onHover, showErrors, mistakes.length, suggestions.length, inlineFeedback.length]);
+    // Always allow hover clearing for cross-highlighting
+    setGlobalHoveredDataId(null);
+    onHover(null);
+  }, [onHover]);
   
   const handleFocus = useCallback(() => {
     onFocus(sentence.id);
@@ -108,7 +151,7 @@ export const SentenceWrapper: React.FC<SentenceWrapperProps> = memo(({
     <span
       data-sentence-id={dataId}
       className={`
-        inline-block px-2 py-1 rounded-md transition-all duration-300 cursor-pointer
+        inline transition-colors duration-200 cursor-pointer
         ${currentColors}
         ${className}
       `}
@@ -122,12 +165,11 @@ export const SentenceWrapper: React.FC<SentenceWrapperProps> = memo(({
       aria-label={`Sentence ${sentence.index + 1}: ${sentence.text.substring(0, 50)}${sentence.text.length > 50 ? '...' : ''}`}
       aria-describedby={`sentence-${sentence.id}-description`}
     >
-      {showErrors && (mistakes.length > 0 || suggestions.length > 0 || inlineFeedback.length > 0) ? (
+      {showErrors && (inlineFeedback.length > 0 || improvedTextsnippets.length > 0) ? (
         <SuggestionHighlighter
           text={sentence.text}
-          mistakes={mistakes}
-          suggestions={suggestions}
           inlineFeedback={inlineFeedback}
+          improvedTextsnippets={improvedTextsnippets}
         />
       ) : (
         sentence.text

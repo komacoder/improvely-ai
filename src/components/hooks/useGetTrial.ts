@@ -37,7 +37,6 @@ export const useGetTrial = () => {
           };
         }
         
-        // Fallback to user-plans endpoint if userPlan not found
         const res = await http.get(`/user-plans`).then(r => r.data);
         const payload = Array.isArray(res?.data) ? res.data[0] : (res?.data ?? res);
         return {

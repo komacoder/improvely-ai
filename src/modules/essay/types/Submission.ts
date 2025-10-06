@@ -31,12 +31,26 @@ export interface ImprovedVersion {
     lexical: string;
     grammar: string;
   };
+  inlineFeedback?: {
+    textsnippet: string;
+    category: string;
+    explanation: string;
+  }[];
 }
 
 export interface InlineFeedback {
   originalText: string;
-  startIndex: number;
-  endIndex: number;
+  startIndex?: number;
+  endIndex?: number;
+  category: string;
+  explanation: string;
+  suggestion: string;
+  suggestionExplanation: string;
+}
+
+// API response format for inline feedback
+export interface APIInlineFeedback {
+  originalText: string;
   category: string;
   explanation: string;
   suggestion: string;
@@ -53,7 +67,7 @@ export interface Submission {
   aiFeedback: {
     mistakes: string[];
     suggestions: string[];
-    inlineFeedback?: InlineFeedback[];
+    inlineFeedback?: APIInlineFeedback[];
     improvedVersions?: {
       band7: ImprovedVersion;
       band8: ImprovedVersion;

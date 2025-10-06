@@ -1,14 +1,14 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { AlertCircle, Lightbulb } from 'lucide-react';
 
 interface SuggestionHighlight {
   text: string;
   startIndex: number;
   endIndex: number;
-  type: 'mistake' | 'suggestion' | 'inline';
+  type: 'mistake' | 'improvement';
   description: string;
-  suggestion?: string;
   category: string;
+  suggestion?: string;
   suggestionExplanation?: string;
 }
 
@@ -24,307 +24,224 @@ interface InlineFeedback {
 
 interface SuggestionHighlighterProps {
   text: string;
-  mistakes: string[];
-  suggestions: string[];
   inlineFeedback?: InlineFeedback[];
+  improvedTextsnippets?: InlineFeedback[];
   className?: string;
 }
 
-interface SimpleTooltipProps {
-  highlight: SuggestionHighlight;
-  isVisible: boolean;
-}
-
-/**
- * AI-powered suggestion highlighting that uses ONLY backend AI feedback with exact indices
- * No hardcoded patterns - everything comes from AI analysis with precise positioning
- */
-
-// Helper function to find text positions when startIndex/endIndex are not provided
-const findTextPosition = (text: string, searchText: string): { startIndex: number; endIndex: number } | null => {
-  const index = text.indexOf(searchText);
-  if (index === -1) {
-    return null;
+// Helper function to find ALL text positions in the content
+const findAllTextPositions = (text: string, searchText: string) => {
+  const positions: { startIndex: number; endIndex: number }[] = [];
+  let startIndex = 0;
+  
+  while ((startIndex = text.indexOf(searchText, startIndex)) !== -1) {
+    positions.push({
+      startIndex: startIndex,
+      endIndex: startIndex + searchText.length
+    });
+    startIndex += searchText.length; // Move past the current match to find the next one
   }
-  return {
-    startIndex: index,
-    endIndex: index + searchText.length
-  };
+  
+  return positions;
 };
 
-
-// Helper function to categorize inline feedback based on content
-const categorizeFeedback = (feedback: InlineFeedback): 'mistake' | 'suggestion' | 'inline' => {
-  const explanation = feedback.explanation.toLowerCase();
-  const category = feedback.category.toLowerCase();
-  
-  // Check if it's a mistake (grammar errors, clarity issues, etc.)
-  if (category.includes('grammar') || 
-      category.includes('clarity') || 
-      explanation.includes('error') || 
-      explanation.includes('errors') ||
-      explanation.includes('incorrect') || 
-      explanation.includes('missing') || 
-      explanation.includes('wrong') ||
-      explanation.includes('should be') ||
-      explanation.includes('requires') ||
-      explanation.includes('subject–verb agreement') ||
-      explanation.includes('article usage') ||
-      explanation.includes('preposition') ||
-      explanation.includes('collocation') ||
-      explanation.includes('pluralization') ||
-      explanation.includes('imprecise') ||
-      explanation.includes('informal') ||
-      explanation.includes('awkward') ||
-      explanation.includes('vague')) {
-    return 'mistake';
-  }
-  
-  // Check if it's a suggestion (improvements, better alternatives)
-  if (explanation.includes('suggestion') || 
-      explanation.includes('better') || 
-      explanation.includes('improve') || 
-      explanation.includes('preferable') ||
-      explanation.includes('more precise') ||
-      explanation.includes('more formal') ||
-      explanation.includes('enhance') ||
-      explanation.includes('corrects') ||
-      explanation.includes('uses') ||
-      explanation.includes('provides') ||
-      explanation.includes('improves') ||
-      explanation.includes('more natural') ||
-      explanation.includes('more idiomatic') ||
-      explanation.includes('sophisticated') ||
-      explanation.includes('advanced')) {
-    return 'suggestion';
-  }
-  
-  // Default to inline feedback (purple)
-  return 'inline';
-};
-
-// Simple Tooltip Component
-const SimpleTooltip: React.FC<SimpleTooltipProps> = ({ highlight, isVisible }) => {
+// Enhanced Tooltip Component with mobile optimization
+const SimpleTooltip: React.FC<{ highlight: SuggestionHighlight; isVisible: boolean }> = ({ highlight, isVisible }) => {
   if (!isVisible) return null;
 
-  const getTooltipColors = () => {
-    const categoryLower = highlight.category?.toLowerCase() || '';
-    
-    if (categoryLower.includes('grammar') || categoryLower.includes('grammatical')) {
-      return 'bg-red-50 text-red-800 border-red-200';
-    } else if (categoryLower.includes('lexical') || categoryLower.includes('vocabulary')) {
-      return 'bg-blue-50 text-blue-800 border-blue-200';
-    } else if (categoryLower.includes('coherence') || categoryLower.includes('cohesion')) {
-      return 'bg-purple-50 text-purple-800 border-purple-200';
-    } else if (categoryLower.includes('task') || categoryLower.includes('response')) {
-      return 'bg-orange-50 text-orange-800 border-orange-200';
-    } else if (categoryLower.includes('clarity') || categoryLower.includes('precision')) {
-      return 'bg-yellow-50 text-yellow-800 border-yellow-200';
-    } else {
-      return 'bg-gray-50 text-gray-800 border-gray-200';
-    }
-  };
-
-  const getArrowColor = () => {
-    const categoryLower = highlight.category?.toLowerCase() || '';
-    
-    if (categoryLower.includes('grammar') || categoryLower.includes('grammatical')) {
-      return 'border-t-red-200';
-    } else if (categoryLower.includes('lexical') || categoryLower.includes('vocabulary')) {
-      return 'border-t-blue-200';
-    } else if (categoryLower.includes('coherence') || categoryLower.includes('cohesion')) {
-      return 'border-t-purple-200';
-    } else if (categoryLower.includes('task') || categoryLower.includes('response')) {
-      return 'border-t-orange-200';
-    } else if (categoryLower.includes('clarity') || categoryLower.includes('precision')) {
-      return 'border-t-yellow-200';
-    } else {
-      return 'border-t-gray-200';
-    }
-  };
-
-  const colors = getTooltipColors();
-  const arrowColor = getArrowColor();
-  const IconComponent = highlight.type === 'mistake' ? AlertCircle : Lightbulb;
+  const isMistake = highlight.type === 'mistake';
+  const iconColor = isMistake ? 'text-red-400' : 'text-green-500';
+  const badgeColor = isMistake 
+    ? 'bg-red-500/20 text-red-100 border-red-400/30' 
+    : 'bg-green-500/30 text-green-100 border-green-500/40';
 
   return (
-    <div className={`absolute z-50 ${colors} border rounded-lg shadow-xl p-4 max-w-sm min-w-[280px] transform -translate-y-full -translate-x-1/2 left-1/2 -top-3`}>
-      {/* Arrow */}
-      <div className={`absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent ${arrowColor}`}></div>
-      
-      <div className="space-y-3">
-        <div className="flex items-center gap-2">
-          <IconComponent className="h-4 w-4 flex-shrink-0" />
-          <span className="font-semibold text-sm">
-            {highlight.type === 'mistake' ? 'Issue' : 
-             highlight.type === 'suggestion' ? 'Suggestion' : 'Feedback'}
-          </span>
-          <span className="text-xs px-2 py-1 bg-white bg-opacity-50 rounded-full font-medium">
-            {highlight.category}
+        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 z-50 animate-in fade-in-0 zoom-in-95 duration-200 max-w-[90vw] sm:max-w-none">
+          <div className="relative rounded-2xl bg-gray-900/95 backdrop-blur-sm text-white shadow-2xl ring-1 ring-white/10 max-w-xs sm:max-w-sm w-max px-4 py-3 sm:px-5 sm:py-4">
+        {/* Arrow with better positioning */}
+        <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-3 h-3 rotate-45 bg-gray-900/95 backdrop-blur-sm shadow-[2px_2px_4px_0_rgba(0,0,0,0.1)]" />
+        
+        {/* Header with improved spacing */}
+        <div className="flex items-center justify-between gap-3 mb-2">
+          <div className="flex items-center gap-2.5">
+            {isMistake ? (
+              <AlertCircle className={`h-4 w-4 ${iconColor} flex-shrink-0`} />
+            ) : (
+              <Lightbulb className={`h-4 w-4 ${iconColor} flex-shrink-0`} />
+            )}
+            <span className="text-xs sm:text-sm font-semibold tracking-wide text-white">
+              {isMistake ? 'Issue Found' : 'Improvement'}
+            </span>
+          </div>
+          <span
+            className={`text-xs px-2 py-1 rounded-lg font-medium border ${badgeColor} whitespace-nowrap`}
+          >
+            {highlight.category || 'General'}
           </span>
         </div>
-        
-        <p className="text-sm leading-relaxed">{highlight.description}</p>
-        
+
+        {/* Body with better typography */}
+        <div className="text-xs sm:text-sm leading-relaxed text-gray-100 pr-1">
+          {highlight.description}
+        </div>
+
+        {/* Suggestion section */}
         {highlight.suggestion && (
-          <div className="bg-white bg-opacity-60 rounded-lg p-3 border-l-3 border-blue-400">
-            <p className="text-sm font-semibold mb-1 text-blue-800">Suggestion:</p>
-            <p className="text-sm font-medium text-blue-700">"{highlight.suggestion}"</p>
+          <div className="mt-3 pt-3 border-t border-gray-700">
+            <div className="text-[10px] sm:text-xs font-medium text-gray-300 mb-1">
+              💡 Suggestion:
+            </div>
+            <div className="text-xs sm:text-sm leading-relaxed text-green-100 bg-green-800/30 rounded-md p-2 mb-2 border border-green-600/30">
+              "{highlight.suggestion}"
+            </div>
             {highlight.suggestionExplanation && (
-              <p className="text-xs text-blue-600 mt-1 italic">{highlight.suggestionExplanation}</p>
+              <div className="text-[10px] sm:text-xs leading-relaxed text-gray-300">
+                {highlight.suggestionExplanation}
+              </div>
             )}
           </div>
         )}
+
+        {/* Mobile touch indicator */}
+        <div className="mt-2 text-[10px] text-gray-400 sm:hidden">
+          Tap to dismiss
+        </div>
       </div>
     </div>
   );
 };
 
-const getColorForType = (type: string, category: string) => {
+const getColorForType = (type: 'mistake' | 'improvement') => {
   if (type === 'mistake') {
-    // Softer red highlighting for mistakes - less harsh
-    return 'bg-red-50 text-red-800 border border-red-200 hover:bg-red-100 hover:border-red-300 underline decoration-red-300 decoration-2 underline-offset-1 sm:underline-offset-2 cursor-pointer';
-  } else if (type === 'suggestion') {
-    // Green highlighting for suggestions - mobile optimized
-    return 'bg-green-100 text-green-900 border border-green-400 hover:bg-green-200 hover:border-green-500 underline decoration-green-500 decoration-2 underline-offset-1 sm:underline-offset-2 cursor-pointer';
-  } else if (type === 'inline') {
-    // Different colors for each inline feedback category
-    const categoryLower = category?.toLowerCase() || '';
-    
-    if (categoryLower.includes('grammar') || categoryLower.includes('grammatical')) {
-      return 'bg-red-50 text-red-800 border border-red-200 hover:bg-red-100 hover:border-red-300 underline decoration-red-300 decoration-2 underline-offset-1 sm:underline-offset-2 cursor-pointer';
-    } else if (categoryLower.includes('lexical') || categoryLower.includes('vocabulary')) {
-      return 'bg-blue-50 text-blue-800 border border-blue-200 hover:bg-blue-100 hover:border-blue-300 underline decoration-blue-300 decoration-2 underline-offset-1 sm:underline-offset-2 cursor-pointer';
-    } else if (categoryLower.includes('coherence') || categoryLower.includes('cohesion')) {
-      return 'bg-purple-50 text-purple-800 border border-purple-200 hover:bg-purple-100 hover:border-purple-300 underline decoration-purple-300 decoration-2 underline-offset-1 sm:underline-offset-2 cursor-pointer';
-    } else if (categoryLower.includes('task') || categoryLower.includes('response')) {
-      return 'bg-orange-50 text-orange-800 border border-orange-200 hover:bg-orange-100 hover:border-orange-300 underline decoration-orange-300 decoration-2 underline-offset-1 sm:underline-offset-2 cursor-pointer';
-    } else if (categoryLower.includes('clarity') || categoryLower.includes('precision')) {
-      return 'bg-yellow-50 text-yellow-800 border border-yellow-200 hover:bg-yellow-100 hover:border-yellow-300 underline decoration-yellow-300 decoration-2 underline-offset-1 sm:underline-offset-2 cursor-pointer';
-    } else {
-      // Default for other categories
-      return 'bg-gray-50 text-gray-800 border border-gray-200 hover:bg-gray-100 hover:border-gray-300 underline decoration-gray-300 decoration-2 underline-offset-1 sm:underline-offset-2 cursor-pointer';
-    }
-  }
-  
-  // Default fallback - mobile optimized
-  return 'bg-gray-100 text-gray-900 border border-gray-400 hover:bg-gray-200 hover:border-gray-500 underline decoration-gray-500 decoration-2 underline-offset-1 sm:underline-offset-2 cursor-pointer';
-};
-
-const getIconForType = (type: string) => {
-  return type === 'mistake' ? AlertCircle : Lightbulb;
-};
-
-const getCategoryLabel = (category: string) => {
-  switch (category) {
-    case 'vocabulary': return 'Lexical Resource';
-    case 'grammar': return 'Grammar & Accuracy';
-    case 'coherence': return 'Coherence & Cohesion';
-    case 'task': return 'Task Achievement';
-    default: return 'General';
+    // Inline red highlighting that doesn't break sentence flow
+    return 'bg-red-200/40 text-red-900 hover:bg-red-300/60 cursor-pointer touch-manipulation select-none';
+  } else {
+    // Enhanced green highlighting for improved versions - more visible
+    return 'bg-green-300/70 text-green-900 hover:bg-green-400/80 cursor-pointer touch-manipulation select-none font-medium';
   }
 };
 
 export const SuggestionHighlighter: React.FC<SuggestionHighlighterProps> = ({
   text,
-  mistakes,
-  suggestions,
   inlineFeedback = [],
+  improvedTextsnippets = [],
   className = ''
 }) => {
   const [activeHighlight, setActiveHighlight] = useState<SuggestionHighlight | null>(null);
+
+  // Add click outside handler for mobile
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+      const target = event.target as Element;
+      if (!target.closest('[data-highlight]')) {
+        setActiveHighlight(null);
+      }
+    };
+
+    if (activeHighlight) {
+      document.addEventListener('click', handleClickOutside);
+      document.addEventListener('touchstart', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, [activeHighlight]);
+  
+  // Debug logging
+  console.log('SuggestionHighlighter received:', {
+    textLength: text.length,
+    inlineFeedbackCount: inlineFeedback.length,
+    improvedTextsnippetsCount: improvedTextsnippets.length,
+    textPreview: text.substring(0, 100) + '...'
+  });
   
   const suggestionHighlights = useMemo(() => {
     const highlights: SuggestionHighlight[] = [];
+    const coveredRanges: { start: number; end: number }[] = [];
     
-    // Debug: Log the feedback data
-    console.log('SuggestionHighlighter Debug:', {
-      textLength: text.length,
-      mistakesLength: mistakes.length,
-      suggestionsLength: suggestions.length,
-      inlineFeedbackLength: inlineFeedback.length,
-      mistakes,
-      suggestions,
-      inlineFeedback
-    });
+    // Helper function to check if a position overlaps with existing highlights
+    const isOverlapping = (start: number, end: number) => {
+      return coveredRanges.some(range => 
+        (start >= range.start && start < range.end) ||
+        (end > range.start && end <= range.end) ||
+        (start <= range.start && end >= range.end)
+      );
+    };
     
-    // Process inline feedback with sentence-level highlighting
+    // Helper function to add highlight and mark range as covered
+    const addHighlight = (highlight: SuggestionHighlight) => {
+      if (!isOverlapping(highlight.startIndex, highlight.endIndex)) {
+        highlights.push(highlight);
+        coveredRanges.push({ start: highlight.startIndex, end: highlight.endIndex });
+        return true;
+      }
+      return false;
+    };
+    
+    // Process inline feedback for original essay (red highlights)
     inlineFeedback.forEach((feedback, index) => {
-      console.log(`Processing inline feedback ${index}:`, {
-        originalText: feedback.originalText,
-        startIndex: feedback.startIndex,
-        endIndex: feedback.endIndex,
-        category: feedback.category,
-        explanation: feedback.explanation
-      });
+      const originalText = feedback.originalText;
+      const positions = findAllTextPositions(text, originalText);
       
-      let startIndex = feedback.startIndex;
-      let endIndex = feedback.endIndex;
-      
-      // If indices are not provided, try to find the text position
-      if (startIndex === undefined || endIndex === undefined) {
-        const position = findTextPosition(text, feedback.originalText);
-        if (position) {
-          startIndex = position.startIndex;
-          endIndex = position.endIndex;
-          console.log(`Found text position for feedback ${index}:`, position);
-        } else {
-          console.warn(`Could not find text position for feedback ${index}:`, feedback.originalText);
-          return; // Skip this feedback if we can't find the text
-        }
-      }
-      
-      // Validate that the indices are within text bounds
-      if (startIndex >= 0 && endIndex <= text.length && startIndex < endIndex) {
-        // Categorize the feedback to determine the highlight type
-        const feedbackType = categorizeFeedback(feedback);
-        
-        highlights.push({
-          text: feedback.originalText,
-          startIndex: startIndex,
-          endIndex: endIndex,
-          type: feedbackType,
+      positions.forEach((position, positionIndex) => {
+        const highlight = {
+          text: originalText,
+          startIndex: position.startIndex,
+          endIndex: position.endIndex,
+          type: 'mistake' as const,
           description: feedback.explanation,
+          category: feedback.category,
           suggestion: feedback.suggestion,
-          suggestionExplanation: feedback.suggestionExplanation,
-          category: feedback.category
-        });
-        console.log(`Added ${feedbackType} highlight for feedback ${index}:`, {
-          originalText: feedback.originalText,
-          type: feedbackType,
-          category: feedback.category
-        });
-      } else {
-        console.warn(`Invalid indices for inline feedback ${index}:`, {
-          startIndex: startIndex,
-          endIndex: endIndex,
-          textLength: text.length
-        });
-      }
+          suggestionExplanation: feedback.suggestionExplanation
+        };
+        
+        if (addHighlight(highlight)) {
+          console.log(`Added mistake highlight ${index}-${positionIndex}:`, originalText, 'at position', position.startIndex);
+        } else {
+          console.log(`Skipped overlapping mistake highlight ${index}-${positionIndex}:`, originalText);
+        }
+      });
     });
     
-    // Process mistakes - these are general feedback items that don't have specific text positions
-    // We'll log them for debugging but not create highlights since they don't have positions
-    mistakes.forEach((mistake, index) => {
-      console.log(`General mistake ${index}:`, mistake);
-      // Note: General mistakes are displayed elsewhere in the UI, not as inline highlights
+    // Process improved textsnippets for improved versions (green highlights)
+    improvedTextsnippets.forEach((snippet, index) => {
+      const originalText = snippet.originalText;
+      const positions = findAllTextPositions(text, originalText);
+      
+      positions.forEach((position, positionIndex) => {
+        const highlight = {
+          text: originalText,
+          startIndex: position.startIndex,
+          endIndex: position.endIndex,
+          type: 'improvement' as const,
+          description: snippet.explanation,
+          category: snippet.category,
+          suggestion: snippet.suggestion,
+          suggestionExplanation: snippet.suggestionExplanation
+        };
+        
+        if (addHighlight(highlight)) {
+          console.log(`Added improvement highlight ${index}-${positionIndex}:`, originalText, 'at position', position.startIndex);
+        } else {
+          console.log(`Skipped overlapping improvement highlight ${index}-${positionIndex}:`, originalText);
+        }
+      });
     });
-    
-    // Process suggestions - these are general feedback items that don't have specific text positions
-    // We'll log them for debugging but not create highlights since they don't have positions
-    suggestions.forEach((suggestion, index) => {
-      console.log(`General suggestion ${index}:`, suggestion);
-      // Note: General suggestions are displayed elsewhere in the UI, not as inline highlights
-    });
-    
-    console.log('Final highlights:', highlights);
-    console.log('Number of highlights created:', highlights.length);
     
     // Sort by start index
-    return highlights.sort((a, b) => a.startIndex - b.startIndex);
-  }, [text, mistakes, suggestions, inlineFeedback]);
+    const sortedHighlights = highlights.sort((a, b) => a.startIndex - b.startIndex);
+    
+    console.log('SuggestionHighlighter highlights created:', sortedHighlights.length);
+    sortedHighlights.forEach((highlight, index) => {
+      console.log(`Highlight ${index}:`, highlight.text, 'type:', highlight.type, 'at position', highlight.startIndex);
+    });
+    
+    return sortedHighlights;
+  }, [text, inlineFeedback, improvedTextsnippets]);
 
-  // Only show highlights if we have inline feedback with specific positions
+  // Only show highlights if we have any
   if (suggestionHighlights.length === 0) {
     return <span className={className}>{text}</span>;
   }
@@ -353,27 +270,36 @@ export const SuggestionHighlighter: React.FC<SuggestionHighlighterProps> = ({
         );
       }
 
-      // Add the highlighted suggestion/error
-      const colorClasses = getColorForType(highlight.type, highlight.category);
-      
-      console.log(`Rendering highlight ${index}:`, {
-        text: highlight.text,
-        type: highlight.type,
-        category: highlight.category,
-        colorClasses: colorClasses
-      });
+      // Add the highlighted suggestion/error as inline text (no containers)
+      const colorClasses = getColorForType(highlight.type);
       
       parts.push(
         <span
           key={`highlight-${index}`}
+          data-highlight
           className={`
-            ${colorClasses} rounded px-1.5 py-0.5
-            transition-all duration-300 ease-in-out text-sm font-medium
-            relative cursor-pointer
-            ${activeHighlight === highlight ? 'shadow-lg scale-105 z-10' : 'hover:shadow-md hover:scale-102'}
+            ${colorClasses}
+            transition-colors duration-150 ease-out
+            relative cursor-pointer inline
+            ${activeHighlight === highlight 
+              ? 'ring-1 ring-gray-400 z-20' 
+              : ''
+            }
           `}
           onMouseEnter={() => handleMouseEnter(highlight)}
           onMouseLeave={handleMouseLeave}
+          onTouchStart={() => handleMouseEnter(highlight)}
+          onTouchEnd={() => handleMouseLeave()}
+          onClick={() => {
+            if (activeHighlight === highlight) {
+              setActiveHighlight(null);
+            } else {
+              setActiveHighlight(highlight);
+            }
+          }}
+          role="button"
+          tabIndex={0}
+          aria-label={`${highlight.type === 'mistake' ? 'Issue' : 'Improvement'}: ${highlight.description}`}
         >
           {highlight.text}
           {activeHighlight === highlight && (
@@ -385,7 +311,7 @@ export const SuggestionHighlighter: React.FC<SuggestionHighlighterProps> = ({
       lastIndex = highlight.endIndex;
     });
 
-    // Add remaining text after the last highlight
+    // Add remaining text
     if (lastIndex < text.length) {
       parts.push(
         <span key="text-end">

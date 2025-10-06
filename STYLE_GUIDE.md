@@ -1,406 +1,319 @@
-# ACE Uplift AI - Style Guide
+# IELTS Band Uplift - Development Style Guide
+
+> A comprehensive guide for developing the IELTS essay analysis application
+
+## Quick Reference
+
+- **Project**: IELTS essay analysis with AI-powered feedback
+- **Stack**: React + TypeScript + Vite + shadcn/ui
+- **Focus**: Educational, accessible, performant
 
 ## Table of Contents
 
 1. [Project Overview](#project-overview)
-2. [Technology Stack](#technology-stack)
-3. [Code Style & Conventions](#code-style--conventions)
-4. [File Organization](#file-organization)
-5. [Component Guidelines](#component-guidelines)
-6. [Styling Guidelines](#styling-guidelines)
-7. [TypeScript Guidelines](#typescript-guidelines)
-8. [State Management](#state-management)
-9. [API Integration](#api-integration)
-10. [Testing Guidelines](#testing-guidelines)
-11. [Performance Guidelines](#performance-guidelines)
-12. [Accessibility Guidelines](#accessibility-guidelines)
+2. [Quick Start](#quick-start)
+3. [Code Standards](#code-standards)
+4. [Component Patterns](#component-patterns)
+5. [Styling System](#styling-system)
+6. [TypeScript Guidelines](#typescript-guidelines)
+7. [State Management](#state-management)
+8. [API Integration](#api-integration)
+9. [Performance & Accessibility](#performance--accessibility)
+10. [Testing Strategy](#testing-strategy)
 
 ## Project Overview
 
-ACE Uplift AI is an IELTS essay analysis and improvement application built with React, TypeScript, and shadcn/ui. The application provides AI-powered essay analysis with band score assessment and generates improved versions for different IELTS bands.
+IELTS Band Uplift is an AI-powered essay analysis platform that helps students improve their IELTS writing scores. The application provides real-time feedback, band score assessment, and generates improved essay versions.
 
-## Technology Stack
+## Quick Start
 
-### Core Technologies
+### Development Setup
 
-- **React 18.3.1** - UI framework
-- **TypeScript 5.8.3** - Type safety and development experience
-- **Vite 5.4.19** - Build tool and development server
-- **React Router DOM 6.30.1** - Client-side routing
+```bash
+# Install dependencies
+bun install
 
-### UI & Styling
+# Start development server
+bun run dev
 
-- **shadcn/ui** - Component library built on Radix UI
-- **Tailwind CSS 3.4.17** - Utility-first CSS framework
-- **Radix UI** - Headless UI primitives
-- **Lucide React** - Icon library
-- **class-variance-authority** - Component variant management
+# Build for production
+bun run build
 
-### State Management & Data
+# Run linting
+bun run lint
+```
 
-- **React Query (TanStack Query) 5.83.0** - Server state management
-- **React Hook Form 7.62.0** - Form handling
-- **Zod 3.25.76** - Schema validation
+### Key Technologies
 
-### Additional Libraries
+| Category       | Technology                    | Purpose                     |
+| -------------- | ----------------------------- | --------------------------- |
+| **Framework**  | React 18.3.1 + TypeScript     | UI development              |
+| **Build**      | Vite 5.4.19                   | Fast development & building |
+| **UI**         | shadcn/ui + Tailwind CSS      | Component system            |
+| **State**      | React Query + React Hook Form | Data management             |
+| **Validation** | Zod                           | Schema validation           |
+| **PDF**        | jsPDF + html2canvas           | Essay export                |
 
-- **Axios 1.11.0** - HTTP client
-- **jsPDF 3.0.2** - PDF generation
-- **html2canvas 1.4.1** - HTML to canvas conversion
-- **Recharts 2.15.4** - Chart components
-- **Sonner 1.7.4** - Toast notifications
-
-## Code Style & Conventions
-
-### General Principles
-
-- Use **functional components** with hooks
-- Prefer **composition over inheritance**
-- Follow **single responsibility principle**
-- Write **self-documenting code** with clear naming
+## Code Standards
 
 ### Naming Conventions
 
-#### Files and Directories
+| Type           | Convention                  | Example               |
+| -------------- | --------------------------- | --------------------- |
+| **Components** | PascalCase                  | `EssayAnalyzer.tsx`   |
+| **Hooks**      | camelCase with `use` prefix | `useEssayAnalysis.ts` |
+| **Utilities**  | camelCase                   | `formatBandScore.ts`  |
+| **Constants**  | UPPER_SNAKE_CASE            | `MAX_ESSAY_LENGTH`    |
+| **Types**      | PascalCase                  | `EssayAnalysisResult` |
 
-```typescript
-// Use PascalCase for components
-EssayAnalyzer.tsx;
-Navigation.tsx;
-
-// Use kebab-case for pages
-index.tsx;
-about.tsx;
-pricing.tsx;
-
-// Use camelCase for utilities and hooks
-useToast.ts;
-utils.ts;
-```
-
-#### Variables and Functions
-
-```typescript
-// Use camelCase for variables and functions
-const [isAnalyzing, setIsAnalyzing] = useState(false);
-const analyzeEssay = async () => {};
-
-// Use PascalCase for components and interfaces
-interface EssayAnalyzerProps {
-  onScoreUpdate: (band: number | null, hasAnalyzed: boolean) => void;
-}
-
-// Use UPPER_SNAKE_CASE for constants
-const MAX_CHECKS = 3;
-const ANIMATION_DURATION = 1500;
-```
-
-#### CSS Classes
-
-```typescript
-// Use Tailwind utility classes with consistent spacing
-className = 'bg-background text-foreground p-4 rounded-lg shadow-medium';
-
-// Use semantic class names for complex styling
-className = 'gradient-hero bg-clip-text text-transparent';
-```
-
-### Import Organization
-
-```typescript
-// 1. React and core libraries
-import { useState, useEffect } from 'react';
-
-// 2. Third-party libraries
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-
-// 3. Icons
-import { Copy, Lightbulb, CheckCircle2 } from 'lucide-react';
-
-// 4. Local utilities and hooks
-import { useToast } from '@/hooks/use-toast';
-import { cn } from '@/lib/utils';
-
-// 5. Types and interfaces
-import type { EssayAnalyzerProps } from './types';
-```
-
-## File Organization
-
-### Directory Structure
+### File Organization
 
 ```
 src/
 ├── components/          # Reusable UI components
 │   ├── ui/             # shadcn/ui components
-│   └── [feature]/      # Feature-specific components
-├── pages/              # Page components
-├── hooks/              # Custom React hooks
-├── lib/                # Utility functions
-├── routes/             # Routing configuration
-└── api/                # API integration
+│   ├── EssayAnalyzer.tsx
+│   └── TypingAnimation.tsx
+├── pages/              # Route components
+├── hooks/              # Custom hooks
+├── lib/                # Utilities
+├── modules/            # Feature modules
+│   ├── auth/
+│   ├── essay/
+│   └── plan/
+└── services/           # API services
 ```
 
-### Component File Structure
+### Import Order
 
 ```typescript
-// 1. Imports
-import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
+// 1. React imports
+import { useState, useEffect } from "react";
 
-// 2. Types and interfaces
-interface ComponentProps {
-  // props definition
-}
+// 2. Third-party libraries
+import { Button } from "@/components/ui/button";
+import { useQuery } from "@tanstack/react-query";
 
-// 3. Component definition
-export const Component = ({ prop }: ComponentProps) => {
-  // state and hooks
-  const [state, setState] = useState();
+// 3. Internal components
+import { EssayAnalyzer } from "@/components/EssayAnalyzer";
 
-  // effects
-  useEffect(() => {
-    // effect logic
-  }, []);
+// 4. Utilities and hooks
+import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
 
-  // event handlers
-  const handleEvent = () => {
-    // handler logic
-  };
-
-  // render
-  return <div>{/* JSX */}</div>;
-};
+// 5. Types
+import type { EssayAnalysisResult } from "@/modules/essay/types";
 ```
 
-## Component Guidelines
+## Component Patterns
 
-### Component Patterns
-
-#### 1. Forward Ref Pattern
+### Essay Analysis Component
 
 ```typescript
-import * as React from 'react';
-import { cn } from '@/lib/utils';
+// components/EssayAnalyzer.tsx
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { useEssayAnalysis } from "@/hooks/useEssayAnalysis";
 
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'default' | 'destructive' | 'outline';
-  size?: 'default' | 'sm' | 'lg' | 'icon';
-}
-
-const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, ...props }, ref) => {
-    return (
-      <button
-        className={cn(buttonVariants({ variant, size, className }))}
-        ref={ref}
-        {...props}
-      />
-    );
-  }
-);
-Button.displayName = 'Button';
-
-export { Button };
-```
-
-#### 2. Compound Component Pattern
-
-```typescript
-// For complex components with multiple parts
-const Card = ({ className, ...props }: CardProps) => (
-  <div
-    className={cn(
-      'rounded-lg border bg-card text-card-foreground shadow-sm',
-      className
-    )}
-    {...props}
-  />
-);
-
-const CardHeader = ({ className, ...props }: CardHeaderProps) => (
-  <div className={cn('flex flex-col space-y-1.5 p-6', className)} {...props} />
-);
-
-const CardContent = ({ className, ...props }: CardContentProps) => (
-  <div className={cn('p-6 pt-0', className)} {...props} />
-);
-
-export { Card, CardHeader, CardContent };
-```
-
-#### 3. Custom Hook Pattern
-
-```typescript
-// Extract reusable logic into custom hooks
-export const useEssayAnalysis = () => {
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [results, setResults] = useState(null);
-
-  const analyzeEssay = async (essay: string) => {
-    setIsAnalyzing(true);
-    try {
-      // analysis logic
-    } catch (error) {
-      // error handling
-    } finally {
-      setIsAnalyzing(false);
-    }
-  };
-
-  return { isAnalyzing, results, analyzeEssay };
-};
-```
-
-### Props Guidelines
-
-- Use **destructuring** for props
-- Provide **default values** where appropriate
-- Use **TypeScript interfaces** for prop types
-- Keep props **minimal and focused**
-
-```typescript
 interface EssayAnalyzerProps {
-  onScoreUpdate: (band: number | null, hasAnalyzed: boolean) => void;
+  onScoreUpdate: (band: number | null) => void;
   initialEssay?: string;
-  maxChecks?: number;
 }
 
 export const EssayAnalyzer = ({
   onScoreUpdate,
-  initialEssay = '',
-  maxChecks = 3,
+  initialEssay = "",
 }: EssayAnalyzerProps) => {
-  // component logic
+  const [essay, setEssay] = useState(initialEssay);
+  const { analyzeEssay, isLoading, results } = useEssayAnalysis();
+
+  const handleAnalyze = async () => {
+    const analysis = await analyzeEssay(essay);
+    onScoreUpdate(analysis.band);
+  };
+
+  return (
+    <div className="space-y-4">
+      <textarea
+        value={essay}
+        onChange={(e) => setEssay(e.target.value)}
+        placeholder="Enter your IELTS essay..."
+        className="w-full min-h-[200px] p-4 border rounded-lg"
+      />
+      <Button onClick={handleAnalyze} disabled={!essay.trim() || isLoading}>
+        {isLoading ? "Analyzing..." : "Analyze Essay"}
+      </Button>
+    </div>
+  );
 };
 ```
 
-## Styling Guidelines
+### Custom Hook Pattern
 
-### Design System
+```typescript
+// hooks/useEssayAnalysis.ts
+import { useState } from "react";
+import { essayAPI } from "@/modules/essay/essayAPI";
 
-#### Color Palette
+export const useEssayAnalysis = () => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [results, setResults] = useState<EssayAnalysisResult | null>(null);
 
-The project uses a comprehensive HSL-based color system defined in `src/index.css`:
+  const analyzeEssay = async (essay: string) => {
+    setIsLoading(true);
+    try {
+      const analysis = await essayAPI.analyze(essay);
+      setResults(analysis);
+      return analysis;
+    } catch (error) {
+      console.error("Analysis failed:", error);
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-```css
-/* Primary Colors */
---primary: 142 76% 36%; /* Green */
---accent: 217 91% 60%; /* Blue */
---success: 142 76% 36%; /* Green */
---warning: 32 95% 44%; /* Orange */
---destructive: 0 84.2% 60.2%; /* Red */
-
-/* Semantic Colors */
---background: 249 100% 98%; /* Light background */
---foreground: 222.2 84% 4.9%; /* Text color */
---muted: 210 40% 96.1%; /* Muted elements */
---border: 214.3 31.8% 91.4%; /* Borders */
+  return { analyzeEssay, isLoading, results };
+};
 ```
 
-#### Gradients
+## Styling System
+
+### Design Tokens
 
 ```css
---gradient-primary: linear-gradient(135deg, hsl(142 76% 36%), hsl(142 76% 46%));
---gradient-accent: linear-gradient(135deg, hsl(217 91% 60%), hsl(217 91% 70%));
---gradient-hero: linear-gradient(135deg, hsl(142 76% 36%), hsl(217 91% 60%));
+/* Primary Colors - IELTS Green Theme */
+:root {
+  --primary: 142 76% 36%; /* IELTS Green */
+  --primary-foreground: 0 0% 98%;
+  --accent: 217 91% 60%; /* Trust Blue */
+  --success: 142 76% 36%; /* Success Green */
+  --warning: 32 95% 44%; /* Warning Orange */
+  --destructive: 0 84% 60%; /* Error Red */
+
+  /* Semantic Colors */
+  --background: 249 100% 98%; /* Light background */
+  --foreground: 222 84% 5%; /* Text color */
+  --muted: 210 40% 96%; /* Muted elements */
+  --border: 214 32% 91%; /* Borders */
+}
 ```
 
-#### Shadows
-
-```css
---shadow-soft: 0 2px 8px hsl(142 76% 36% / 0.08);
---shadow-medium: 0 4px 16px hsl(142 76% 36% / 0.12);
---shadow-strong: 0 8px 32px hsl(142 76% 36% / 0.16);
-```
-
-### Tailwind CSS Usage
-
-#### Utility Classes
-
-- Use **semantic color tokens** instead of hardcoded values
-- Prefer **responsive design** with mobile-first approach
-- Use **consistent spacing** scale
+### Tailwind Usage
 
 ```typescript
 // ✅ Good - Using design tokens
-className = 'bg-primary text-primary-foreground hover:bg-primary/90';
+className = "bg-primary text-primary-foreground hover:bg-primary/90";
+
+// ✅ Good - Responsive design
+className = "p-4 sm:p-6 lg:p-8 text-sm sm:text-base";
 
 // ❌ Bad - Hardcoded values
-className = 'bg-green-600 text-white hover:bg-green-700';
+className = "bg-green-600 text-white hover:bg-green-700";
 ```
 
-#### Component Variants
-
-Use `class-variance-authority` for component variants:
+### Component Variants
 
 ```typescript
+// Using class-variance-authority for consistent variants
 const buttonVariants = cva(
-  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors',
+  "inline-flex items-center justify-center gap-2 rounded-md font-medium transition-colors",
   {
     variants: {
       variant: {
-        default: 'bg-primary text-primary-foreground hover:bg-primary/90',
-        destructive:
-          'bg-destructive text-destructive-foreground hover:bg-destructive/90',
-        outline:
-          'border border-input bg-background hover:bg-accent hover:text-accent-foreground',
+        default: "bg-primary text-primary-foreground hover:bg-primary/90",
+        outline: "border border-input bg-background hover:bg-accent",
+        ghost: "hover:bg-accent hover:text-accent-foreground",
       },
       size: {
-        default: 'h-10 px-4 py-2',
-        sm: 'h-9 rounded-md px-3',
-        lg: 'h-11 rounded-md px-8',
+        sm: "h-9 px-3 text-sm",
+        default: "h-10 px-4",
+        lg: "h-11 px-8",
       },
     },
     defaultVariants: {
-      variant: 'default',
-      size: 'default',
+      variant: "default",
+      size: "default",
     },
   }
 );
 ```
 
-#### Responsive Design
+## Logo Design Guidelines
 
-```typescript
-// Mobile-first approach
-className = 'p-4 sm:p-6 lg:p-8';
-className = 'text-sm sm:text-base lg:text-lg';
-className = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3';
-```
+### Current Logo Analysis
 
-### CSS Custom Properties
+The current logo features:
 
-- Define **all colors in HSL format**
-- Use **CSS custom properties** for design tokens
-- Support **dark mode** with class-based switching
+- **Icon**: Green graduation cap (mortarboard)
+- **Text**: "IELTS Band Uplift" in bold black
+- **Style**: Clean, educational, professional
+
+### Suggested Improvements
+
+#### 1. Enhanced Visual Hierarchy
 
 ```css
-:root {
-  --primary: 142 76% 36%;
-  --primary-foreground: 0 0% 98%;
+/* Logo container improvements */
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
-.dark {
-  --primary: 142 76% 36%;
-  --primary-foreground: 0 0% 98%;
+.logo-icon {
+  width: 40px;
+  height: 40px;
+  fill: hsl(var(--primary));
+}
+
+.logo-text {
+  font-weight: 700;
+  font-size: 1.5rem;
+  color: hsl(var(--foreground));
+}
+```
+
+#### 2. Color Variations
+
+- **Primary**: Green graduation cap with blue accent
+- **Monochrome**: For single-color applications
+- **Inverted**: For dark backgrounds
+
+#### 3. Responsive Sizes
+
+```typescript
+// Logo component with size variants
+interface LogoProps {
+  size?: "sm" | "md" | "lg";
+  variant?: "full" | "icon" | "text";
+}
+
+const logoVariants = {
+  sm: "h-6 w-6",
+  md: "h-8 w-8",
+  lg: "h-12 w-12",
+};
+```
+
+### Brand Colors
+
+```css
+/* IELTS Brand Colors */
+:root {
+  --ielts-green: 142 76% 36%; /* Primary brand color */
+  --ielts-blue: 217 91% 60%; /* Trust and reliability */
+  --ielts-gold: 45 93% 47%; /* Achievement and success */
+  --ielts-gray: 210 40% 96%; /* Neutral elements */
 }
 ```
 
 ## TypeScript Guidelines
 
-### Type Safety
-
-- Use **strict TypeScript configuration** where possible
-- Define **interfaces for all props and state**
-- Use **generic types** for reusable components
-- Avoid **any type** unless absolutely necessary
-
-### Interface Definitions
+### Essential Types
 
 ```typescript
-// Use descriptive interface names
+// Essay analysis types
 interface EssayAnalysisResult {
   band: number;
   text: string;
@@ -415,115 +328,80 @@ interface SentenceMap {
   id: string;
 }
 
-// Use union types for constrained values
-type AnalysisVariant = 'default' | 'detailed' | 'minimal';
+// Union types for constrained values
 type BandLevel = 7 | 8 | 9;
+type AnalysisVariant = "default" | "detailed" | "minimal";
 ```
 
-### Type Guards
+### Type Safety Best Practices
 
 ```typescript
-// Use type guards for runtime type checking
-const isAnalysisResult = (data: unknown): data is EssayAnalysisResult => {
-  return (
-    typeof data === 'object' &&
-    data !== null &&
-    'band' in data &&
-    'text' in data &&
-    'improvements' in data
-  );
-};
-```
-
-### Generic Components
-
-```typescript
-interface SelectProps<T> {
-  options: T[];
-  value: T | null;
-  onChange: (value: T) => void;
-  getLabel: (item: T) => string;
-  getValue: (item: T) => string;
+// ✅ Good - Specific types
+interface EssayAnalyzerProps {
+  onScoreUpdate: (band: number | null) => void;
+  initialEssay?: string;
 }
 
-export const Select = <T>({
-  options,
-  value,
-  onChange,
-  getLabel,
-  getValue,
-}: SelectProps<T>) => {
-  // component implementation
+// ❌ Bad - Using any
+const handleData = (data: any) => {};
+
+// ✅ Good - Type guards
+const isAnalysisResult = (data: unknown): data is EssayAnalysisResult => {
+  return typeof data === "object" && data !== null && "band" in data;
 };
 ```
 
 ## State Management
 
-### Local State
-
-- Use **useState** for simple component state
-- Use **useReducer** for complex state logic
-- Keep state **minimal and normalized**
+### Local State Patterns
 
 ```typescript
-// ✅ Good - Minimal state
-const [isLoading, setIsLoading] = useState(false);
-const [error, setError] = useState<string | null>(null);
+// ✅ Good - Minimal, focused state
+const [isAnalyzing, setIsAnalyzing] = useState(false);
+const [analysisResult, setAnalysisResult] =
+  useState<EssayAnalysisResult | null>(null);
 
-// ❌ Bad - Redundant state
-const [isLoading, setIsLoading] = useState(false);
-const [hasError, setHasError] = useState(false);
-const [errorMessage, setErrorMessage] = useState('');
+// ✅ Good - Functional updates
+const updateScore = (newScore: number) => {
+  setAnalysisResult((prev) => (prev ? { ...prev, band: newScore } : null));
+};
 ```
 
-### Global State
+### Global State Strategy
 
-- Use **React Query** for server state
-- Use **Context API** for theme/auth state
-- Consider **Zustand** for complex client state
-
-### State Updates
+- **React Query**: Server state and caching
+- **Context API**: Authentication and theme
+- **Local Storage**: User preferences and drafts
 
 ```typescript
-// Use functional updates for state that depends on previous value
-setCount(prev => prev + 1);
-
-// Use callback refs for DOM measurements
-const [height, setHeight] = useState(0);
-const elementRef = useCallback((node: HTMLElement | null) => {
-  if (node) {
-    setHeight(node.getBoundingClientRect().height);
-  }
-}, []);
+// React Query for server state
+const { data, isLoading, error } = useQuery({
+  queryKey: ["essay-analysis", essayId],
+  queryFn: () => essayAPI.getAnalysis(essayId),
+});
 ```
 
 ## API Integration
 
-### HTTP Client
-
-- Use **Axios** for HTTP requests
-- Implement **request/response interceptors**
-- Use **React Query** for caching and synchronization
-
 ### API Structure
 
 ```typescript
-// api/essayAPI.ts
-import axios from 'axios';
+// modules/essay/essayAPI.ts
+import axios from "axios";
 
 const api = axios.create({
-  baseURL: process.env.VITE_API_BASE_URL,
+  baseURL: import.meta.env.VITE_API_BASE_URL,
   timeout: 10000,
 });
 
 export const essayAPI = {
-  analyze: async (essay: string, options: AnalysisOptions) => {
-    const response = await api.post('/analyze', { essay, options });
+  analyze: async (essay: string) => {
+    const response = await api.post("/analyze", { essay });
     return response.data;
   },
 
-  generateTopic: async (category: string) => {
-    const response = await api.get(`/topics/${category}`);
+  getTopics: async () => {
+    const response = await api.get("/topics");
     return response.data;
   },
 };
@@ -532,216 +410,110 @@ export const essayAPI = {
 ### Error Handling
 
 ```typescript
-// Use React Query for automatic error handling
+// React Query with error handling
 const { data, error, isLoading } = useQuery({
-  queryKey: ['essay-analysis', essay],
-  queryFn: () => essayAPI.analyze(essay, options),
+  queryKey: ["essay-analysis", essay],
+  queryFn: () => essayAPI.analyze(essay),
   enabled: !!essay.trim(),
+  retry: 2,
 });
 
-// Handle errors gracefully
-if (error) {
-  toast({
-    title: 'Analysis Failed',
-    description: 'Please try again later.',
-    variant: 'destructive',
-  });
-}
+// Toast notifications for errors
+useEffect(() => {
+  if (error) {
+    toast({
+      title: "Analysis Failed",
+      description: "Please try again later.",
+      variant: "destructive",
+    });
+  }
+}, [error]);
 ```
 
-## Testing Guidelines
+## Performance & Accessibility
 
-### Testing Strategy
+### Performance Optimization
 
-- Write **unit tests** for utility functions
-- Write **integration tests** for components
-- Write **E2E tests** for critical user flows
+```typescript
+// Code splitting for routes
+const EssayAnalyzer = lazy(() => import("./pages/EssayAnalyzer"));
+
+// Memoization for expensive components
+const EssayResults = React.memo(({ data }: EssayResultsProps) => {
+  return <div>{/* Results rendering */}</div>;
+});
+
+// Optimized re-renders
+const handleAnalyze = useCallback(async (essay: string) => {
+  const result = await analyzeEssay(essay);
+  setResults(result);
+}, []);
+```
+
+### Accessibility Standards
+
+```typescript
+// Semantic HTML with ARIA
+<button
+  aria-label="Analyze IELTS essay"
+  aria-describedby="analysis-help"
+  onClick={handleAnalyze}
+>
+  Analyze Essay
+</button>
+
+// Screen reader support
+<div id="analysis-help" className="sr-only">
+  Click to analyze your essay and receive band score feedback
+</div>
+```
+
+## Testing Strategy
 
 ### Component Testing
 
 ```typescript
-import { render, screen, fireEvent } from '@testing-library/react';
-import { EssayAnalyzer } from './EssayAnalyzer';
-
-describe('EssayAnalyzer', () => {
-  it('should analyze essay when submit button is clicked', async () => {
+// Test essay analyzer component
+describe("EssayAnalyzer", () => {
+  it("analyzes essay and updates score", async () => {
     const mockOnScoreUpdate = jest.fn();
     render(<EssayAnalyzer onScoreUpdate={mockOnScoreUpdate} />);
 
-    const textarea = screen.getByPlaceholderText('Enter your essay...');
-    const submitButton = screen.getByRole('button', { name: /analyze/i });
+    const textarea = screen.getByPlaceholderText("Enter your IELTS essay...");
+    const button = screen.getByRole("button", { name: /analyze/i });
 
-    fireEvent.change(textarea, { target: { value: 'Test essay content' } });
-    fireEvent.click(submitButton);
+    fireEvent.change(textarea, { target: { value: "Test essay" } });
+    fireEvent.click(button);
 
     expect(mockOnScoreUpdate).toHaveBeenCalled();
   });
 });
 ```
 
-### Utility Testing
-
-```typescript
-import { cn } from '@/lib/utils';
-
-describe('cn utility', () => {
-  it('should merge class names correctly', () => {
-    const result = cn('base-class', 'additional-class', {
-      'conditional-class': true,
-    });
-    expect(result).toBe('base-class additional-class conditional-class');
-  });
-});
-```
-
-## Performance Guidelines
-
-### Code Splitting
-
-- Use **React.lazy** for route-based code splitting
-- Use **dynamic imports** for heavy components
-- Implement **preloading** for critical routes
-
-```typescript
-// Route-based code splitting
-const About = lazy(() => import('./pages/About'));
-const Pricing = lazy(() => import('./pages/Pricing'));
-
-// Wrap with Suspense
-<Suspense fallback={<LoadingSpinner />}>
-  <Routes>
-    <Route path="/about" element={<About />} />
-    <Route path="/pricing" element={<Pricing />} />
-  </Routes>
-</Suspense>;
-```
-
-### Memoization
-
-- Use **React.memo** for expensive components
-- Use **useMemo** for expensive calculations
-- Use **useCallback** for stable function references
-
-```typescript
-// Memoize expensive components
-const ExpensiveChart = React.memo(({ data }: ChartProps) => {
-  // chart rendering logic
-});
-
-// Memoize expensive calculations
-const processedData = useMemo(() => {
-  return data.map(item => ({
-    ...item,
-    processed: expensiveCalculation(item),
-  }));
-}, [data]);
-
-// Memoize callback functions
-const handleSubmit = useCallback((formData: FormData) => {
-  submitForm(formData);
-}, []);
-```
-
-### Bundle Optimization
-
-- Use **tree shaking** for unused code elimination
-- Implement **proper import/export** patterns
-- Use **webpack bundle analyzer** for monitoring
-
-## Accessibility Guidelines
-
-### ARIA Attributes
-
-- Use **semantic HTML** elements
-- Add **ARIA labels** for screen readers
-- Implement **keyboard navigation**
-
-```typescript
-// Use semantic HTML
-<button
-  aria-label="Analyze essay"
-  aria-describedby="analysis-description"
-  onClick={handleAnalyze}
->
-  Analyze Essay
-</button>
-
-// Provide descriptions
-<div id="analysis-description" className="sr-only">
-  Click to analyze your essay and get band score feedback
-</div>
-```
-
-### Keyboard Navigation
-
-```typescript
-// Support keyboard navigation
-const handleKeyDown = (event: KeyboardEvent) => {
-  if (event.key === 'Enter' || event.key === ' ') {
-    event.preventDefault();
-    handleAction();
-  }
-};
-
-// Use focus management
-const focusRef = useRef<HTMLButtonElement>(null);
-useEffect(() => {
-  if (isVisible) {
-    focusRef.current?.focus();
-  }
-}, [isVisible]);
-```
-
-### Color and Contrast
-
-- Ensure **sufficient color contrast** (WCAG AA)
-- Don't rely **solely on color** for information
-- Support **high contrast mode**
-
-```css
-/* Use design tokens for consistent contrast */
-.text-primary {
-  color: hsl(var(--primary));
-}
-
-/* Provide alternative indicators */
-.status-indicator {
-  color: hsl(var(--success));
-}
-
-.status-indicator::before {
-  content: '✓ ';
-}
-```
-
-### Screen Reader Support
-
-```typescript
-// Use proper heading hierarchy
-<h1>Main Page Title</h1>
-<h2>Section Title</h2>
-<h3>Subsection Title</h3>
-
-// Provide alternative text for images
-<img src="chart.png" alt="Essay analysis results chart showing band scores" />
-
-// Use live regions for dynamic content
-<div aria-live="polite" aria-atomic="true">
-  {analysisStatus}
-</div>
-```
-
 ---
 
-## Best Practices Summary
+## Quick Reference
 
-1. **Consistency**: Follow established patterns and conventions
-2. **Simplicity**: Keep components and functions focused and simple
-3. **Performance**: Optimize for speed and user experience
-4. **Accessibility**: Ensure the app is usable by everyone
-5. **Maintainability**: Write code that's easy to understand and modify
-6. **Type Safety**: Leverage TypeScript for better development experience
-7. **Testing**: Write tests for critical functionality
-8. **Documentation**: Document complex logic and APIs
+### Development Commands
 
-This style guide should be treated as a living document and updated as the project evolves.
+```bash
+bun run dev          # Start development server
+bun run build        # Build for production
+bun run lint         # Run ESLint
+bun run preview      # Preview production build
+```
+
+### Key Principles
+
+1. **Consistency** - Follow established patterns
+2. **Simplicity** - Keep components focused
+3. **Performance** - Optimize for speed
+4. **Accessibility** - Ensure usability for all
+5. **Type Safety** - Leverage TypeScript
+
+### Logo Improvements
+
+- Enhanced visual hierarchy with proper spacing
+- Color variations for different contexts
+- Responsive sizing for different screen sizes
+- Consistent brand colors (IELTS green, trust blue, success gold)

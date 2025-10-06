@@ -88,13 +88,25 @@ export const essayAPI = {
     return response.data;
   },
 
-  // AI Analysis
-  analyzeSubmission: async (id: string) => {
-    const response = await http.post(`ielts-ai/analyze/${id}`, {});
+  // AI Analysis - New three-step workflow
+  analyzeScores: async (id: string) => {
+    const response = await http.post(`ielts-ai/analyze/scores/${id}`, {});
     return response.data;
   },
-  generateImprovedVersion: async (id: string) => {
-    const response = await http.post(`ielts-ai/improved-version/${id}`, {});
+  analyzeFeedback: async (id: string) => {
+    const response = await http.post(`ielts-ai/analyze/feedback/${id}`, {});
+    return response.data;
+  },
+  generateImprovedVersion: async (id: string, targetBand?: 'BAND_SEVEN' | 'BAND_EIGHT' | 'BAND_NINE') => {
+    const url = targetBand 
+      ? `ielts-ai/improved-version/${id}/${targetBand}`
+      : `ielts-ai/improved-version/${id}`;
+    const response = await http.post(url, {});
+    return response.data;
+  },
+  // Legacy endpoint for backward compatibility
+  analyzeSubmission: async (id: string) => {
+    const response = await http.post(`ielts-ai/analyze/${id}`, {});
     return response.data;
   },
 };

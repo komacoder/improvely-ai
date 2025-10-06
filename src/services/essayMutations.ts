@@ -108,6 +108,44 @@ export const useSubmissionById = (submissionId: string | null | undefined) => {
   });
 };
 
+// New three-step analysis mutations
+export const useAnalyzeScores = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (submissionId: string) => {
+      const response = await essayAPI.analyzeScores(submissionId);
+      return response;
+    },
+    onSuccess: async (data, submissionId) => {
+      await queryClient.invalidateQueries({ queryKey: ['submissions'] });
+      await queryClient.invalidateQueries({ queryKey: ['latest-submission'] });
+      await queryClient.invalidateQueries({ queryKey: ['submission', submissionId] });
+    },
+    onError: error => {
+      console.error('Scores analysis error:', error);
+    },
+  });
+};
+
+export const useAnalyzeFeedback = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (submissionId: string) => {
+      const response = await essayAPI.analyzeFeedback(submissionId);
+      return response;
+    },
+    onSuccess: async (data, submissionId) => {
+      await queryClient.invalidateQueries({ queryKey: ['submissions'] });
+      await queryClient.invalidateQueries({ queryKey: ['latest-submission'] });
+      await queryClient.invalidateQueries({ queryKey: ['submission', submissionId] });
+    },
+    onError: error => {
+      console.error('Feedback analysis error:', error);
+    },
+  });
+};
+
+// Legacy mutation for backward compatibility
 export const useAnalyzeSubmission = () => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -129,11 +167,11 @@ export const useAnalyzeSubmission = () => {
 export const useGenerateImprovedVersion = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (submissionId: string) => {
-      const response = await essayAPI.generateImprovedVersion(submissionId);
+    mutationFn: async ({ submissionId, targetBand }: { submissionId: string; targetBand?: 'BAND_SEVEN' | 'BAND_EIGHT' | 'BAND_NINE' }) => {
+      const response = await essayAPI.generateImprovedVersion(submissionId, targetBand);
       return response;
     },
-    onSuccess: async (data, submissionId) => {
+    onSuccess: async (data, { submissionId }) => {
       await queryClient.invalidateQueries({ queryKey: ['submissions'] });
       await queryClient.invalidateQueries({ queryKey: ['latest-submission'] });
       await queryClient.invalidateQueries({ queryKey: ['submission', submissionId] });

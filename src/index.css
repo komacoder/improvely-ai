@@ -6,6 +6,25 @@
   @apply shadow-md transition-all duration-200;
 }
 
+/* Mobile-specific responsive fixes */
+@media (max-width: 640px) {
+  .mobile-stack {
+    @apply flex-col gap-2;
+  }
+  
+  .mobile-text-sm {
+    @apply text-sm;
+  }
+  
+  .mobile-p-2 {
+    @apply p-2;
+  }
+  
+  .mobile-gap-1 {
+    @apply gap-1;
+  }
+}
+
 @keyframes caret-blink {
   0%, 70%, 100% {
     opacity: 1;

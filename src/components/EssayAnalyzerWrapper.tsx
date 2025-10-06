@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { useSubmitEssay, useAnalyzeSubmission, useGenerateImprovedVersion, useLatestSubmission, useSubmissionById } from '@/services/essayMutations';
+import { useSubmitEssay, useAnalyzeScores, useAnalyzeFeedback, useGenerateImprovedVersion, useLatestSubmission, useSubmissionById } from '@/services/essayMutations';
 import { SendSubmission } from '@/modules/essay/types/SendSubmission';
 import { EssayCreator } from './EssayCreator';
 import { EssayResults } from './EssayResults';
@@ -60,6 +60,7 @@ export const EssayAnalyzerWrapper = ({
   const [currentTipIndex, setCurrentTipIndex] = useState(0);
   const [isTipVisible, setIsTipVisible] = useState(true);
   const [currentSubmissionId, setCurrentSubmissionId] = useState<string | null>(null);
+  const [isImprovedVersionsLoading, setIsImprovedVersionsLoading] = useState(false);
   // Auto-analysis disabled per requirements. Keep flag removed.
 
   // Clear any previous results when component mounts (user navigates to the page)
@@ -78,10 +79,11 @@ const clearCurrentResults = () => {
     setAnalysisStartTime(null);
     setAnalysisCompleted(false);
     setImprovedVersionCompleted(false);
+    setIsImprovedVersionsLoading(false);
     onScoreUpdate(null, false);
   };
 
-  // Function to handle essay analysis
+  // Function to handle essay analysis with progressive results
   const handleEssayAnalysis = async (submissionData: SendSubmission) => {
     try {
       setIsProcessingEssay(true);
@@ -98,44 +100,109 @@ const clearCurrentResults = () => {
       if (submissionId) {
         setCurrentSubmissionId(submissionId);
         
-        // Add a small delay to ensure submission is fully processed
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        // Start Step 1: Analyze scores (this will show results immediately when ready)
+        console.log('Step 1: Starting scores analysis for submission ID:', submissionId);
+        analyzeScoresMutation.mutateAsync(submissionId)
+          .then(() => {
+            console.log('Scores analysis completed for submission ID:', submissionId);
+            // Start Step 2: Analyze feedback (this will show results immediately when ready)
+            console.log('Step 2: Starting feedback analysis for submission ID:', submissionId);
+            return analyzeFeedbackMutation.mutateAsync(submissionId);
+          })
+          .then(() => {
+            console.log('Feedback analysis completed for submission ID:', submissionId);
+            setAnalysisCompleted(true);
+            // Start Step 3: Generate improved versions for all three bands
+            console.log('Step 3: Starting improved version generation for submission ID:', submissionId);
+            setIsImprovedVersionsLoading(true);
+            
+            // Generate improved versions for all three bands in parallel
+            const bandPromises = [
+              generateImprovedVersionMutation.mutateAsync({ submissionId, targetBand: 'BAND_SEVEN' }),
+              generateImprovedVersionMutation.mutateAsync({ submissionId, targetBand: 'BAND_EIGHT' }),
+              generateImprovedVersionMutation.mutateAsync({ submissionId, targetBand: 'BAND_NINE' })
+            ];
+            
+            return Promise.allSettled(bandPromises).then((results) => {
+              console.log('Improved version results:', results);
+              
+              // Process results and create band versions
+              const versions: UiBandVersion[] = [];
+              
+              results.forEach((result, index) => {
+                if (result.status === 'fulfilled' && result.value) {
+                  const band = index === 0 ? 7 : index === 1 ? 8 : 9;
+                  const improvedData = result.value.data || result.value;
+                  
+                  console.log(`Band ${band} improved version:`, improvedData);
+                  console.log(`Band ${band} improved version data structure:`, {
+                    hasData: !!improvedData,
+                    hasIntroduction: !!improvedData?.introduction,
+                    hasBody: !!improvedData?.body,
+                    hasConclusion: !!improvedData?.conclusion,
+                    bodyType: Array.isArray(improvedData?.body) ? 'array' : typeof improvedData?.body,
+                    bodyLength: Array.isArray(improvedData?.body) ? improvedData.body.length : 'not array'
+                  });
+                  
+                  // Extract text content from the response - API returns data in improvedVersion object
+                  const improvedVersionData = improvedData.improvedVersion || improvedData;
+                  const introduction = improvedVersionData.introduction || '';
+                  const body = improvedVersionData.body || [];
+                  const conclusion = improvedVersionData.conclusion || '';
+                  
+                  console.log(`Band ${band} API response:`, improvedData);
+                  console.log(`Band ${band} improvedVersionData:`, improvedVersionData);
+                  console.log(`Band ${band} extracted content:`, {
+                    introduction: introduction.substring(0, 100) + '...',
+                    body: Array.isArray(body) ? body.map(b => b.substring(0, 50) + '...') : body,
+                    conclusion: conclusion.substring(0, 100) + '...'
+                  });
+                  
+                  // Convert body to array if it's a string
+                  const bodyArray = Array.isArray(body) ? body : (body ? [body] : []);
+                  
+                  versions.push({
+                    band,
+                    sections: {
+                      introduction: introduction,
+                      body: bodyArray,
+                      conclusion: conclusion,
+                    },
+                    paragraphs: createParagraphMapping(
+                      activeSubmission?.body || '',
+                      {
+                        introduction: introduction,
+                        body_one: bodyArray[0] || '',
+                        body_two: bodyArray[1] || '',
+                        conclusion: conclusion,
+                      }
+                    ),
+                    improvements: activeSubmission?.aiFeedback?.suggestions || [],
+                  });
+                }
+              });
+              
+              if (versions.length > 0) {
+                console.log('Setting band versions from API responses:', versions);
+                setBandVersions(versions);
+                setSelectedBand(versions[0].band);
+              }
+              
+              return results;
+            });
+          })
+          .then(() => {
+            console.log('Improved version generation completed for submission ID:', submissionId);
+            setImprovedVersionCompleted(true);
+            setIsImprovedVersionsLoading(false);
+          })
+          .catch((error) => {
+            console.error('Analysis step failed for submission ID:', submissionId, error);
+            // Don't throw here - partial results might still be useful
+            setImprovedVersionCompleted(true); // Mark as completed even if failed
+            setIsImprovedVersionsLoading(false);
+          });
         
-        // Then trigger analysis
-        console.log('Starting analysis for submission ID:', submissionId);
-        try {
-          await analyzeSubmissionMutation.mutateAsync(submissionId);
-          console.log('Analysis completed for submission ID:', submissionId);
-          setAnalysisCompleted(true);
-        } catch (error) {
-          console.error('Analysis failed for submission ID:', submissionId, error);
-          throw error;
-        }
-        
-        // Add another small delay before generating improved versions
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // Generate improved versions
-        console.log('Starting improved version generation for submission ID:', submissionId);
-        try {
-          await generateImprovedVersionMutation.mutateAsync(submissionId);
-          console.log('Improved version generation completed for submission ID:', submissionId);
-          setImprovedVersionCompleted(true);
-        } catch (error) {
-          console.error('Improved version generation failed for submission ID:', submissionId, error);
-          // Don't throw here - analysis might have succeeded even if improved version fails
-          setImprovedVersionCompleted(true); // Mark as completed even if failed
-        }
-        
-        // Only mark as analyzed when both are completed
-        if (analysisCompleted && improvedVersionCompleted) {
-          setIsAnalyzed(true);
-          // Force a refetch of the submission data
-          await refetchSpecificSubmission();
-        }
-        
-        // Don't set isProcessingEssay to false here - let shouldShowProcessing logic handle it
-        // based on the actual submission data state
         return submissionId;
       } else {
         console.error('No submission ID found in response:', response);
@@ -149,29 +216,41 @@ const clearCurrentResults = () => {
     }
   };
 
-  // Dynamic tips based on AI analysis - no hardcoded tips
+  // Dynamic tips based on current analysis progress
   const getDynamicTips = (submission: any) => {
-    if (!submission?.aiFeedback) {
+    if (!submission) {
       return [
-        "AI is analyzing your essay to provide personalized feedback and suggestions.",
-        "Our AI will identify specific areas for improvement in your writing.",
-        "You'll receive detailed feedback on vocabulary, grammar, coherence, and task achievement."
+        "AI is analyzing your essay in multiple steps for the best results.",
+        "Step 1: Analyzing scores and criteria...",
+        "Step 2: Generating detailed feedback...",
+        "Step 3: Creating improved versions..."
       ];
     }
 
     const tips = [];
-    const { mistakes, suggestions } = submission.aiFeedback;
-
-    if (mistakes && mistakes.length > 0) {
-      tips.push(`AI found ${mistakes.length} areas for improvement in your essay.`);
+    
+    // Check what analysis steps are complete
+    if (submission.score) {
+      tips.push(`✅ Scores analysis complete! Your essay scored ${submission.score.toFixed(1)} band.`);
+    } else {
+      tips.push("🔄 Step 1: Analyzing scores and criteria...");
     }
 
-    if (suggestions && suggestions.length > 0) {
-      tips.push(`AI identified ${suggestions.length} positive aspects in your writing.`);
+    if (submission.aiFeedback?.suggestions || submission.aiFeedback?.mistakes) {
+      tips.push("✅ Feedback analysis complete! Detailed suggestions are ready.");
+    } else if (submission.score) {
+      tips.push("🔄 Step 2: Generating detailed feedback and suggestions...");
     }
 
-    tips.push("Hover over highlighted text to see detailed AI feedback and suggestions.");
-    tips.push("AI analysis covers vocabulary, grammar, coherence, and task achievement.");
+    if (submission.aiFeedback?.improvedVersions || submission.improvedVersion) {
+      tips.push("✅ Improved versions ready! You can now compare different band levels.");
+    } else if (submission.aiFeedback?.suggestions || submission.aiFeedback?.mistakes) {
+      tips.push("🔄 Step 3: Creating improved versions for different band levels...");
+    }
+
+    if (tips.length === 0) {
+      tips.push("AI is analyzing your essay to provide personalized feedback and suggestions.");
+    }
 
     return tips;
   };
@@ -212,7 +291,8 @@ const clearCurrentResults = () => {
   const isLoadingSubmission = (submissionId || currentSubmissionId) ? isLoadingSpecific : submissionsLoading;
 
   const submitEssayMutation = useSubmitEssay();
-  const analyzeSubmissionMutation = useAnalyzeSubmission();
+  const analyzeScoresMutation = useAnalyzeScores();
+  const analyzeFeedbackMutation = useAnalyzeFeedback();
   const generateImprovedVersionMutation = useGenerateImprovedVersion();
   
   // Track if we're currently processing an essay
@@ -229,33 +309,35 @@ const clearCurrentResults = () => {
 
   // Auto-analysis after login is disabled; user must click Analyze manually.
 
-  // Determine loading state early for tip rotation
+  // Determine loading state - show processing only when we have no results at all
   const shouldShowProcessing = 
     // Show loading when we're processing an essay (immediate feedback)
     isProcessingEssay ||
-    // Show loading when mutations are pending
-    submitEssayMutation.isPending || 
-    analyzeSubmissionMutation.isPending ||
-    generateImprovedVersionMutation.isPending ||
-    // Show loading when we have a submission that's being processed (but not if it's already analyzed)
-    (currentSubmissionId && activeSubmission && 
-     !activeSubmission.aiFeedback?.improvedVersions &&
-     (activeSubmission.status === IELTSWritingSubmissionStatus.IN_PROGRESS || 
-      activeSubmission.status === IELTSWritingSubmissionStatus.IDLE)) ||
+    // Show loading when mutations are pending AND we have no results yet
+    (submitEssayMutation.isPending || 
+     analyzeScoresMutation.isPending ||
+     analyzeFeedbackMutation.isPending ||
+     generateImprovedVersionMutation.isPending) &&
+    !activeSubmission?.score && 
+    !activeSubmission?.aiFeedback?.suggestions && 
+    !activeSubmission?.aiFeedback?.mistakes ||
     // Show loading when we have a submission but no results yet
     (currentSubmissionId && !activeSubmission) ||
-    // Show loading for 300 seconds (5 minutes) after analysis starts, but only if we don't have results yet
+    // Show loading for 300 seconds (5 minutes) after analysis starts, but only if we don't have ANY results yet
     (analysisStartTime && (Date.now() - analysisStartTime) < 300000 && 
-     (!activeSubmission?.aiFeedback?.improvedVersions && !activeSubmission?.improvedVersion)) ||
-    // Show loading if analysis is completed but improved version is not yet completed
-    (analysisCompleted && !improvedVersionCompleted);
+     !activeSubmission?.score && 
+     !activeSubmission?.aiFeedback?.suggestions && 
+     !activeSubmission?.aiFeedback?.mistakes &&
+     !activeSubmission?.aiFeedback?.improvedVersions && 
+     !activeSubmission?.improvedVersion);
 
   // Debug logging for shouldShowProcessing
   useEffect(() => {
     console.log('shouldShowProcessing:', shouldShowProcessing, {
       isProcessingEssay,
       submitEssayPending: submitEssayMutation.isPending,
-      analyzePending: analyzeSubmissionMutation.isPending,
+      analyzeScoresPending: analyzeScoresMutation.isPending,
+      analyzeFeedbackPending: analyzeFeedbackMutation.isPending,
       improvedVersionPending: generateImprovedVersionMutation.isPending,
       hasImprovedVersions: !!activeSubmission?.aiFeedback?.improvedVersions,
       hasImprovedVersion: !!activeSubmission?.improvedVersion,
@@ -263,7 +345,7 @@ const clearCurrentResults = () => {
       currentSubmissionId,
       activeSubmissionStatus: activeSubmission?.status
     });
-  }, [shouldShowProcessing, isProcessingEssay, submitEssayMutation.isPending, analyzeSubmissionMutation.isPending, generateImprovedVersionMutation.isPending, activeSubmission?.aiFeedback?.improvedVersions, activeSubmission?.improvedVersion, analysisStartTime, currentSubmissionId, activeSubmission?.status]);
+  }, [shouldShowProcessing, isProcessingEssay, submitEssayMutation.isPending, analyzeScoresMutation.isPending, analyzeFeedbackMutation.isPending, generateImprovedVersionMutation.isPending, activeSubmission?.aiFeedback?.improvedVersions, activeSubmission?.improvedVersion, analysisStartTime, currentSubmissionId, activeSubmission?.status]);
 
   // Rotate tips every 4 seconds when processing
   useEffect(() => {
@@ -355,100 +437,185 @@ const clearCurrentResults = () => {
 
   // Handle latest submission data - only show results for current submission
   useEffect(() => {
-    if (activeSubmission && (submissionId || currentSubmissionId)) {
+    // Initialize versions array at the top of useEffect
+    const versions: UiBandVersion[] = [];
+    let defaultSelectedBand: number | null = null;
+    
+    if (activeSubmission && activeSubmission !== null && (submissionId || currentSubmissionId)) {
       console.log('Submission data received:', {
         submissionId,
         currentSubmissionId,
-        hasImprovedVersions: !!activeSubmission.aiFeedback?.improvedVersions,
-        hasImprovedVersion: !!activeSubmission.improvedVersion,
-        status: activeSubmission.status,
-        score: activeSubmission.score
+        hasImprovedVersions: !!activeSubmission?.aiFeedback?.improvedVersions,
+        hasImprovedVersion: !!activeSubmission?.improvedVersion,
+        status: activeSubmission?.status,
+        score: activeSubmission?.score
+      });
+      
+      // If we have scores, stop processing and show results immediately
+      if (activeSubmission?.score) {
+        console.log('Scores received, stopping processing state');
+        setIsProcessingEssay(false);
+        setAnalysisStartTime(null);
+        setHasAnalyzed(true);
+        onScoreUpdate(activeSubmission?.score, true);
+      }
+      
+      // If we have feedback, show it immediately
+      if (activeSubmission?.aiFeedback?.suggestions || activeSubmission?.aiFeedback?.mistakes) {
+        console.log('Feedback received, showing immediately');
+        setAnalysisCompleted(true);
+      }
+      
+      // Debug: Log what data we have
+      console.log('Submission data debug:', {
+        hasImprovedVersion: !!activeSubmission?.improvedVersion,
+        hasImprovedVersions: !!activeSubmission?.aiFeedback?.improvedVersions,
+        improvedVersion: activeSubmission?.improvedVersion,
+        improvedVersions: activeSubmission?.aiFeedback?.improvedVersions,
+        fullSubmission: activeSubmission
       });
       
       // If we have improved versions (either from aiFeedback or separate improvedVersion), show the analysis
-      if (activeSubmission.aiFeedback?.improvedVersions || activeSubmission.improvedVersion) {
-        console.log('Results received, clearing analysis start time');
+      if (activeSubmission?.aiFeedback?.improvedVersions || activeSubmission?.improvedVersion) {
+        console.log('Improved versions received, showing immediately');
         setHasAnalyzed(true);
         setAnalysisStartTime(null); // Clear analysis start time when results are ready
-
-        // Convert API data to UiBandVersion format
-        const versions: UiBandVersion[] = [];
-      
-      // First try to get from improvedVersion (new API format)
-      if (activeSubmission.improvedVersion) {
-        console.log('Using improvedVersion from separate API call');
+        setImprovedVersionCompleted(true);
         
-        if (activeSubmission.improvedVersion.band7) {
-          const band7Data = activeSubmission.improvedVersion.band7;
-          versions.push({
-            band: 7,
-            sections: {
-              introduction: band7Data.introduction,
-              body: band7Data.body,
-              conclusion: band7Data.conclusion,
-            },
-            paragraphs: createParagraphMapping(
-              activeSubmission.body,
-              {
-                introduction: band7Data.introduction,
-                body_one: band7Data.body[0] || '',
-                body_two: band7Data.body[1] || '',
-                conclusion: band7Data.conclusion,
-              }
-            ),
-            improvements: activeSubmission.aiFeedback?.suggestions || [],
-          });
+        // Set default selected band to 7 if available, otherwise 8, then 9
+        if (activeSubmission?.improvedVersion?.band7 || activeSubmission?.aiFeedback?.improvedVersions?.band7) {
+          setSelectedBand(7);
+        } else if (activeSubmission?.improvedVersion?.band8 || activeSubmission?.aiFeedback?.improvedVersions?.band8) {
+          setSelectedBand(8);
+        } else if (activeSubmission?.improvedVersion?.band9 || activeSubmission?.aiFeedback?.improvedVersions?.band9) {
+          setSelectedBand(9);
         }
-
-        if (activeSubmission.improvedVersion.band8) {
-          const band8Data = activeSubmission.improvedVersion.band8;
-          versions.push({
-            band: 8,
-            sections: {
-              introduction: band8Data.introduction,
-              body: band8Data.body,
-              conclusion: band8Data.conclusion,
-            },
-            paragraphs: createParagraphMapping(
-              activeSubmission.body,
-              {
-                introduction: band8Data.introduction,
-                body_one: band8Data.body[0] || '',
-                body_two: band8Data.body[1] || '',
-                conclusion: band8Data.conclusion,
-              }
-            ),
-            improvements: activeSubmission.aiFeedback?.suggestions || [],
-          });
+      } else {
+        console.log('No improved versions found in submission data');
+        // If we have scores and feedback but no improved versions, still show the analysis
+        if (activeSubmission?.score && (activeSubmission?.aiFeedback?.suggestions || activeSubmission?.aiFeedback?.mistakes)) {
+          console.log('Showing analysis without improved versions');
+          setHasAnalyzed(true);
+          setAnalysisStartTime(null);
+          setImprovedVersionCompleted(false); // Mark as not completed since we don't have improved versions
         }
+      }
 
-        if (activeSubmission.improvedVersion.band9) {
-          const band9Data = activeSubmission.improvedVersion.band9;
-          versions.push({
-            band: 9,
-            sections: {
-              introduction: band9Data.introduction,
-              body: band9Data.body,
-              conclusion: band9Data.conclusion,
-            },
-            paragraphs: createParagraphMapping(
-              activeSubmission.body,
-              {
-                introduction: band9Data.introduction,
-                body_one: band9Data.body[0] || '',
-                body_two: band9Data.body[1] || '',
-                conclusion: band9Data.conclusion,
-              }
-            ),
-            improvements: activeSubmission.aiFeedback?.suggestions || [],
-          });
+        // NEW LOGIC: Handle improved versions from MySubmissions (already processed data)
+        console.log('Processing improved versions for MySubmissions:', {
+          hasImprovedVersion: !!activeSubmission?.improvedVersion,
+          hasImprovedVersions: !!activeSubmission?.aiFeedback?.improvedVersions,
+          improvedVersion: activeSubmission?.improvedVersion,
+          improvedVersions: activeSubmission?.aiFeedback?.improvedVersions
+        });
+        
+        // Handle new improvedVersion structure with band7, band8, band9 properties
+        if (activeSubmission && activeSubmission !== null && activeSubmission?.improvedVersion) {
+          console.log('Processing activeSubmission.improvedVersion:', activeSubmission?.improvedVersion);
+          
+          const improvedVersionData = activeSubmission?.improvedVersion;
+          
+          // Check for Band 7
+          if (improvedVersionData.band7) {
+            console.log('Found Band 7 improved version data.');
+            const band7Data = improvedVersionData.band7;
+            versions.push({
+              band: 7,
+              sections: {
+                introduction: band7Data.introduction || '',
+                body: Array.isArray(band7Data.body) ? band7Data.body : [band7Data.body || ''],
+                conclusion: band7Data.conclusion || '',
+              },
+              paragraphs: createParagraphMapping(
+                activeSubmission?.body || '',
+                {
+                  introduction: band7Data.introduction || '',
+                  body_one: Array.isArray(band7Data.body) ? band7Data.body[0] || '' : band7Data.body || '',
+                  body_two: Array.isArray(band7Data.body) ? band7Data.body[1] || '' : '',
+                  conclusion: band7Data.conclusion || '',
+                }
+              ),
+              improvements: activeSubmission?.aiFeedback?.suggestions || [],
+            });
+            if (!defaultSelectedBand) defaultSelectedBand = 7;
+          }
+          
+          // Check for Band 8
+          if (improvedVersionData.band8) {
+            console.log('Found Band 8 improved version data.');
+            const band8Data = improvedVersionData.band8;
+            versions.push({
+              band: 8,
+              sections: {
+                introduction: band8Data.introduction || '',
+                body: Array.isArray(band8Data.body) ? band8Data.body : [band8Data.body || ''],
+                conclusion: band8Data.conclusion || '',
+              },
+              paragraphs: createParagraphMapping(
+                activeSubmission?.body || '',
+                {
+                  introduction: band8Data.introduction || '',
+                  body_one: Array.isArray(band8Data.body) ? band8Data.body[0] || '' : band8Data.body || '',
+                  body_two: Array.isArray(band8Data.body) ? band8Data.body[1] || '' : '',
+                  conclusion: band8Data.conclusion || '',
+                }
+              ),
+              improvements: activeSubmission?.aiFeedback?.suggestions || [],
+            });
+            if (!defaultSelectedBand) defaultSelectedBand = 8;
+          }
+          
+          // Check for Band 9
+          if (improvedVersionData.band9) {
+            console.log('Found Band 9 improved version data.');
+            const band9Data = improvedVersionData.band9;
+            versions.push({
+              band: 9,
+              sections: {
+                introduction: band9Data.introduction || '',
+                body: Array.isArray(band9Data.body) ? band9Data.body : [band9Data.body || ''],
+                conclusion: band9Data.conclusion || '',
+              },
+              paragraphs: createParagraphMapping(
+                activeSubmission?.body || '',
+                {
+                  introduction: band9Data.introduction || '',
+                  body_one: Array.isArray(band9Data.body) ? band9Data.body[0] || '' : band9Data.body || '',
+                  body_two: Array.isArray(band9Data.body) ? band9Data.body[1] || '' : '',
+                  conclusion: band9Data.conclusion || '',
+                }
+              ),
+              improvements: activeSubmission?.aiFeedback?.suggestions || [],
+            });
+            if (!defaultSelectedBand) defaultSelectedBand = 9;
+          }
+        }
+        
+        // Set band versions if we have any
+        if (versions.length > 0) {
+          console.log('Setting band versions from MySubmissions:', versions);
+          setBandVersions(versions);
+          setSelectedBand(defaultSelectedBand || versions[0].band);
+          setCurrentBand(defaultSelectedBand || versions[0].band);
+          
+          // Notify parent component with actual score from API
+          if (activeSubmission && activeSubmission !== null) {
+            onScoreUpdate(activeSubmission?.score, true);
+          }
+          
+          // Stop processing state when we have results
+          setIsProcessingEssay(false);
+        } else {
+          console.log('No improved versions found in MySubmissions data.');
+          setHasAnalyzed(false);
+          if (activeSubmission && activeSubmission !== null) {
+            onScoreUpdate(activeSubmission?.score || null, false);
+          }
         }
       }
       // Fallback to old format if improvedVersion is not available
-      else if (activeSubmission.aiFeedback?.improvedVersions) {
-        const versions: UiBandVersion[] = [];
-
-        if (activeSubmission.aiFeedback.improvedVersions.band7) {
+      else if (activeSubmission && activeSubmission !== null && activeSubmission.aiFeedback?.improvedVersions) {
+        if (activeSubmission?.aiFeedback?.improvedVersions?.band7) {
           const band7Data = activeSubmission.aiFeedback.improvedVersions.band7;
           versions.push({
             band: 7,
@@ -461,7 +628,7 @@ const clearCurrentResults = () => {
               conclusion: band7Data.conclusion,
             },
             paragraphs: createParagraphMapping(
-              activeSubmission.body,
+              activeSubmission?.body,
               {
                 introduction: band7Data.introduction,
                 body_one: Array.isArray(band7Data.body) ? band7Data.body[0] || '' : band7Data.body_one || '',
@@ -469,11 +636,11 @@ const clearCurrentResults = () => {
                 conclusion: band7Data.conclusion,
               }
             ),
-            improvements: activeSubmission.aiFeedback.suggestions || [],
+            improvements: activeSubmission?.aiFeedback?.suggestions || [],
           });
         }
 
-        if (activeSubmission.aiFeedback.improvedVersions.band8) {
+        if (activeSubmission?.aiFeedback?.improvedVersions?.band8) {
           const band8Data = activeSubmission.aiFeedback.improvedVersions.band8;
           versions.push({
             band: 8,
@@ -486,7 +653,7 @@ const clearCurrentResults = () => {
               conclusion: band8Data.conclusion,
             },
             paragraphs: createParagraphMapping(
-              activeSubmission.body,
+              activeSubmission?.body,
               {
                 introduction: band8Data.introduction,
                 body_one: Array.isArray(band8Data.body) ? band8Data.body[0] || '' : band8Data.body_one || '',
@@ -494,11 +661,11 @@ const clearCurrentResults = () => {
                 conclusion: band8Data.conclusion,
               }
             ),
-            improvements: activeSubmission.aiFeedback.suggestions || [],
+            improvements: activeSubmission?.aiFeedback?.suggestions || [],
           });
         }
 
-        if (activeSubmission.aiFeedback.improvedVersions.band9) {
+        if (activeSubmission?.aiFeedback?.improvedVersions?.band9) {
           const band9Data = activeSubmission.aiFeedback.improvedVersions.band9;
           versions.push({
             band: 9,
@@ -511,7 +678,7 @@ const clearCurrentResults = () => {
               conclusion: band9Data.conclusion,
             },
             paragraphs: createParagraphMapping(
-              activeSubmission.body,
+              activeSubmission?.body,
               {
                 introduction: band9Data.introduction,
                 body_one: Array.isArray(band9Data.body) ? band9Data.body[0] || '' : band9Data.body_one || '',
@@ -519,7 +686,7 @@ const clearCurrentResults = () => {
                 conclusion: band9Data.conclusion,
               }
             ),
-            improvements: activeSubmission.aiFeedback.suggestions || [],
+            improvements: activeSubmission?.aiFeedback?.suggestions || [],
           });
         }
       }
@@ -538,18 +705,18 @@ const clearCurrentResults = () => {
         setSelectedBand(targetBandMap[targetScore]);
 
         // Notify parent component with actual score from API
-        onScoreUpdate(activeSubmission.score, true);
+        onScoreUpdate(activeSubmission?.score, true);
         
         // Stop processing state when we have results
         setIsProcessingEssay(false);
-      }
       } else {
         // If we have submission data but no improved versions, still show the essay
         console.log('Submission found but no improved versions yet');
         setHasAnalyzed(false);
-        onScoreUpdate(activeSubmission.score || null, false);
+        if (activeSubmission && activeSubmission !== null) {
+          onScoreUpdate(activeSubmission?.score || null, false);
+        }
       }
-    }
   }, [
     activeSubmission,
     submissionId,
@@ -559,16 +726,16 @@ const clearCurrentResults = () => {
     createParagraphMapping,
   ]);
 
-  // Determine which component to render - show results for current submission or specific submission from URL
+  // Determine which component to render - show results when scores are ready
   const shouldShowResults =
     activeSubmission &&
     (submissionId || currentSubmissionId) && // Show results if: 1) specific submissionId from URL, or 2) currentSubmissionId exists (user just analyzed)
-    (activeSubmission.status === IELTSWritingSubmissionStatus.IN_PROGRESS ||
-      activeSubmission.status === IELTSWritingSubmissionStatus.IDLE ||
-      activeSubmission.status === IELTSWritingSubmissionStatus.ANALYZED) &&
-    // Show results if we have improved versions OR if we're viewing a specific submission (even without improved versions)
-    ((activeSubmission.aiFeedback?.improvedVersions || activeSubmission.improvedVersion) || 
-     (submissionId && activeSubmission.status === IELTSWritingSubmissionStatus.ANALYZED));
+    (activeSubmission?.status === IELTSWritingSubmissionStatus.IN_PROGRESS ||
+      activeSubmission?.status === IELTSWritingSubmissionStatus.IDLE ||
+      activeSubmission?.status === IELTSWritingSubmissionStatus.ANALYZED) &&
+    // Show results as soon as we have scores (even if feedback/improved versions are still loading)
+    (activeSubmission?.score || 
+     (submissionId && activeSubmission?.status === IELTSWritingSubmissionStatus.ANALYZED));
 
   // Debug logging for shouldShowResults
   useEffect(() => {
@@ -631,13 +798,10 @@ const clearCurrentResults = () => {
           <h3 className="text-lg font-semibold mb-2">Analyzing Your Essay</h3>
           <div className="text-muted-foreground mb-6">
             <p className="mb-2">
-              Our AI is analyzing your essay and generating improved versions.
+              Our AI is analyzing your essay in three progressive steps for faster results.
             </p>
             <p className="mb-2 text-sm">
-              This process includes both essay analysis and improved version generation.
-            </p>
-            <p className="mb-4 text-sm font-medium text-blue-600">
-              Maximum wait time: 5 minutes (300 seconds)
+              You'll see results as each step completes, so you don't have to wait for everything to finish.
             </p>
             <div className="bg-accent/20 p-4 rounded-lg border-l-4 border-primary w-full md:w-[600px]">
               <p className="text-xl font-medium text-primary mb-2 text-center">
@@ -672,6 +836,11 @@ const clearCurrentResults = () => {
 
   if (shouldShowResults && activeSubmission) {
     console.log('Showing EssayResults');
+    
+    // Determine loading states for different sections
+    const hasFeedback = !!(activeSubmission?.aiFeedback?.suggestions || activeSubmission?.aiFeedback?.mistakes);
+    const hasImprovedVersions = bandVersions.length > 0;
+    
     return (
       <EssayResults
         latestSubmission={activeSubmission}
@@ -684,6 +853,9 @@ const clearCurrentResults = () => {
         setExpandedCriteria={setExpandedCriteria}
         options={options}
         setOptions={setOptions}
+        // Loading states for progressive display - show loading when we have score but not the data yet
+        isFeedbackLoading={!hasFeedback && (analyzeFeedbackMutation.isPending || (activeSubmission?.score && !activeSubmission?.aiFeedback?.suggestions))}
+        isImprovedVersionsLoading={isImprovedVersionsLoading || (activeSubmission?.score && !activeSubmission?.improvedVersion && !activeSubmission?.aiFeedback?.improvedVersions)}
       />
     );
   }
