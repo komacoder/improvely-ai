@@ -19,7 +19,6 @@ export const useSubmitEssay = () => {
       await queryClient.invalidateQueries({ queryKey: ['latest-submission'] });
     },
     onError: error => {
-      console.error('Essay submission error:', error);
     },
   });
 };
@@ -33,7 +32,6 @@ export const useSubmissions = (enabled: boolean = true) => {
     queryKey: ['submissions'],
     queryFn: async () => essayAPI.getSubmissions(),
     staleTime: 30 * 1000, // 30 seconds
-    gcTime: 5 * 60 * 1000, // 5 minutes
     enabled,
     refetchInterval: ({ state }) => {
       const res = state.data;
@@ -104,7 +102,6 @@ export const useSubmissionById = (submissionId: string | null | undefined) => {
     },
     enabled: !!submissionId,
     staleTime: 30 * 1000, // 30 seconds
-    gcTime: 5 * 60 * 1000, // 5 minutes
   });
 };
 
@@ -122,7 +119,6 @@ export const useAnalyzeScores = () => {
       await queryClient.invalidateQueries({ queryKey: ['submission', submissionId] });
     },
     onError: error => {
-      console.error('Scores analysis error:', error);
     },
   });
 };
@@ -140,7 +136,6 @@ export const useAnalyzeFeedback = () => {
       await queryClient.invalidateQueries({ queryKey: ['submission', submissionId] });
     },
     onError: error => {
-      console.error('Feedback analysis error:', error);
     },
   });
 };
@@ -159,7 +154,6 @@ export const useAnalyzeSubmission = () => {
       await queryClient.invalidateQueries({ queryKey: ['submission', submissionId] });
     },
     onError: error => {
-      console.error('Essay analysis error:', error);
     },
   });
 };
@@ -177,7 +171,6 @@ export const useGenerateImprovedVersion = () => {
       await queryClient.invalidateQueries({ queryKey: ['submission', submissionId] });
     },
     onError: error => {
-      console.error('Improved version generation error:', error);
     },
   });
 };

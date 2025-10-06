@@ -89,8 +89,6 @@ const Pricing = () => {
 
 
   // Debug: Log user profile data
-  console.log('User Profile Data:', userProfileData);
-  console.log('User Plan Data:', userPlanData);
 
   // Manual refresh function for testing
   const handleRefreshData = () => {
@@ -106,16 +104,6 @@ const Pricing = () => {
     const isCurrentPlan = userCurrentPlan ? 
       (plan._id === userCurrentPlan.plan._id) : 
       (plan.price === 0 && !userTrialData?.hasPaidPlan); // Freemium is current only if no paid plan
-    
-    console.log(`Plan ${plan.title}:`, {
-      planId: plan._id,
-      userPlanId: userCurrentPlan?.plan?._id,
-      userTrialPlan: userTrialData?.plan,
-      isCurrentPlan,
-      hasPaidPlan: userCurrentPlan?.hasPaidPlan || userTrialData?.hasPaidPlan,
-      submissionsUsed: userCurrentPlan?.submissionsUsed || userTrialData?.submissionsUsed,
-      submissionsLimit: userCurrentPlan?.submissionsLimit || userTrialData?.submissionsLimit
-    });
     
     const isFreemium = plan.price === 0;
     const hasPaidPlan = userCurrentPlan?.hasPaidPlan || userTrialData?.hasPaidPlan || false;

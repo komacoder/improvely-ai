@@ -97,10 +97,7 @@ const EssayResults = ({
   }, [latestSubmission?.body]);
 
   const selectedVersion = useMemo(() => {
-    console.log('EssayResults - bandVersions:', bandVersions);
-    console.log('EssayResults - selectedBand:', selectedBand);
     const version = bandVersions.find(v => v.band === selectedBand);
-    console.log('EssayResults - selectedVersion:', version);
     return version;
   }, [bandVersions, selectedBand]);
 
@@ -117,7 +114,6 @@ const EssayResults = ({
         description: 'Text has been copied to your clipboard.',
       });
     } catch (err) {
-      console.error('Failed to copy text: ', err);
       toast({
         title: 'Failed to copy',
         description: 'Could not copy text to clipboard.',
@@ -184,7 +180,6 @@ const EssayResults = ({
     const improvedVersionData = latestSubmission?.improvedVersion?.[`band${selectedBand}` as keyof typeof latestSubmission.improvedVersion];
     
     if (!improvedVersionData?.inlineFeedback || !Array.isArray(improvedVersionData.inlineFeedback)) {
-      console.log('No inlineFeedback data found for band', selectedBand);
       return [];
     }
     
@@ -208,10 +203,6 @@ const EssayResults = ({
       })
       .filter(snippet => snippet.startIndex >= 0); // Only include snippets that were found in the text
     
-    console.log(`Textsnippets for band ${selectedBand}:`, textsnippets.length);
-    textsnippets.forEach((snippet, index) => {
-      console.log(`Snippet ${index}:`, snippet.originalText, 'at position', snippet.startIndex);
-    });
     
     return textsnippets;
   };
@@ -560,7 +551,7 @@ const EssayResults = ({
             <CardHeader>
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
                 <h2 className="text-base sm:text-lg md:text-xl font-semibold">Improved Version</h2>
-                <div className="flex gap-1 sm:gap-2 flex-wrap">
+                <div className="flex gap-1 sm:gap-2 flex-nowrap overflow-x-auto">
                   {bandVersions.map(version => (
                     <Button
                       key={version.band}
@@ -775,17 +766,17 @@ const EssayResults = ({
                     </div>
 
                     {options.showExplanations && (
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2 text-sm font-medium">
-                          <Lightbulb className="h-4 w-4 text-accent" />
-                          Key Improvements Made
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-2">
+                          <Lightbulb className="h-5 w-5 text-blue-600" />
+                          <h3 className="text-base font-bold text-gray-900">Key Improvements Made</h3>
                         </div>
-                        <ul className="text-sm text-muted-foreground space-y-1">
+                        <ul className="space-y-3 text-sm">
                           {selectedVersion.improvements.map(
                             (improvement, idx) => (
-                              <li key={idx} className="flex items-start gap-2">
-                                <AlertCircle className="h-3 w-3 mt-0.5 text-accent flex-shrink-0" />
-                                {improvement}
+                              <li key={idx} className="flex items-start gap-3">
+                                <span className="text-blue-600 mt-1 text-sm font-bold">•</span>
+                                <span className="font-medium text-gray-800 leading-relaxed">{improvement}</span>
                               </li>
                             )
                           )}

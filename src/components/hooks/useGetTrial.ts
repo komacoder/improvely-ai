@@ -90,7 +90,6 @@ export const useGetTrial = () => {
     },
     retry: false,
     staleTime: 0, // Always consider stale
-    gcTime: 5 * 60 * 1000, // 5 minutes
     refetchOnWindowFocus: true,
     refetchOnMount: true,
   });

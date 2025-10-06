@@ -149,13 +149,6 @@ export const SuggestionHighlighter: React.FC<SuggestionHighlighterProps> = ({
     };
   }, [activeHighlight]);
   
-  // Debug logging
-  console.log('SuggestionHighlighter received:', {
-    textLength: text.length,
-    inlineFeedbackCount: inlineFeedback.length,
-    improvedTextsnippetsCount: improvedTextsnippets.length,
-    textPreview: text.substring(0, 100) + '...'
-  });
   
   const suggestionHighlights = useMemo(() => {
     const highlights: SuggestionHighlight[] = [];
@@ -198,9 +191,6 @@ export const SuggestionHighlighter: React.FC<SuggestionHighlighterProps> = ({
         };
         
         if (addHighlight(highlight)) {
-          console.log(`Added mistake highlight ${index}-${positionIndex}:`, originalText, 'at position', position.startIndex);
-        } else {
-          console.log(`Skipped overlapping mistake highlight ${index}-${positionIndex}:`, originalText);
         }
       });
     });
@@ -223,9 +213,6 @@ export const SuggestionHighlighter: React.FC<SuggestionHighlighterProps> = ({
         };
         
         if (addHighlight(highlight)) {
-          console.log(`Added improvement highlight ${index}-${positionIndex}:`, originalText, 'at position', position.startIndex);
-        } else {
-          console.log(`Skipped overlapping improvement highlight ${index}-${positionIndex}:`, originalText);
         }
       });
     });
@@ -233,10 +220,6 @@ export const SuggestionHighlighter: React.FC<SuggestionHighlighterProps> = ({
     // Sort by start index
     const sortedHighlights = highlights.sort((a, b) => a.startIndex - b.startIndex);
     
-    console.log('SuggestionHighlighter highlights created:', sortedHighlights.length);
-    sortedHighlights.forEach((highlight, index) => {
-      console.log(`Highlight ${index}:`, highlight.text, 'type:', highlight.type, 'at position', highlight.startIndex);
-    });
     
     return sortedHighlights;
   }, [text, inlineFeedback, improvedTextsnippets]);

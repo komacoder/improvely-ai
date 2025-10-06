@@ -13,8 +13,6 @@ export const useCreatePayment = () => {
     },
     onSuccess: (data) => {
       if (data.data.paymentMethod === 'Payme') {
-        console.log('Backend payment response:', data);
-        console.log('Amount from backend:', data.data.amount, 'UZS');
         
         // Generate Paycom checkout URL using the orderId and amount from backend
         // Backend already provides amount in UZS, so we use it directly
@@ -44,7 +42,6 @@ export const useCreatePayment = () => {
       }, 1000);
     },
     onError: (error: any) => {
-      console.error('Payment creation error:', error);
       toast.error(error.response?.data?.message || 'Failed to create payment');
     },
   });
@@ -54,13 +51,10 @@ export const useUserProfile = () => {
   return useQuery({
     queryKey: ['user-profile'],
     queryFn: async () => {
-      console.log('Fetching user profile...');
       const result = await paymentAPI.getUserProfile();
-      console.log('User profile fetched:', result);
       return result;
     },
     staleTime: 0, // Always consider stale
-    gcTime: 5 * 60 * 1000, // 5 minutes
     refetchOnWindowFocus: true,
     refetchOnMount: true,
   });

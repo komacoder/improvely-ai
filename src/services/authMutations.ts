@@ -45,7 +45,6 @@ export const useLoginOtp = () => {
       return response;
     },
     onError: (error: any) => {
-      console.error('Login OTP error:', error);
     },
   });
 };
@@ -97,7 +96,6 @@ export const useVerifyOtp = () => {
       }
     },
     onError: (error: any) => {
-      console.error('Verify OTP error:', error);
     },
   });
 };
@@ -136,7 +134,6 @@ export const useGoogleSignIn = () => {
       }
     },
     onError: (error: any) => {
-      console.error('Google sign-in error:', error);
     },
   });
 };

@@ -81,7 +81,6 @@ export const EssayCreator = ({ isAnalyzing, onAnalyzeEssay, onStartNewAnalysis, 
   // Load submission data when viewing a specific submission
   useEffect(() => {
     if (activeSubmission && submissionId) {
-      console.log('Loading submission data into EssayCreator:', activeSubmission);
       setEssay(activeSubmission.body || '');
       
       // Set topic based on submission data
@@ -97,7 +96,6 @@ export const EssayCreator = ({ isAnalyzing, onAnalyzeEssay, onStartNewAnalysis, 
       // Set target score
       if (activeSubmission.targetScore) {
         // You might want to set this somewhere if you have a target score selector
-        console.log('Target score:', activeSubmission.targetScore);
       }
     }
   }, [activeSubmission, submissionId]);
@@ -207,7 +205,6 @@ export const EssayCreator = ({ isAnalyzing, onAnalyzeEssay, onStartNewAnalysis, 
     try {
       await onAnalyzeEssay(submissionData);
     } catch (error) {
-      console.error('Error analyzing essay:', error);
       
       toast.error('Failed to analyze essay. Please try again.');
     }

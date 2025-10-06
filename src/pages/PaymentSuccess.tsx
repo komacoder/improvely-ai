@@ -7,6 +7,7 @@ import { Navigation } from '@/components/ui/navigation';
 import { useAuthContext } from '@/auth/hooks/useAuthContext';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
+import { paymentAPI } from '@/services/paymentAPI';
 
 const PaymentSuccess: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -39,20 +40,9 @@ const PaymentSuccess: React.FC = () => {
       }
 
       try {
-        console.log(`Verifying payment for Order ID: ${orderId}, Plan ID: ${planId}`);
 
-        // Simulate payment verification (in real app, this would be a backend call)
-        const response = await new Promise<{ success: boolean; message: string }>((resolve) => {
-          setTimeout(() => {
-            // In a real scenario, this would be a backend call to verify payment
-            const isSuccess = Math.random() > 0.1; // 90% chance of success for demo
-            if (isSuccess) {
-              resolve({ success: true, message: 'Your premium plan has been activated successfully!' });
-            } else {
-              resolve({ success: false, message: 'Payment could not be verified. Please contact support.' });
-            }
-          }, 2000); // Simulate network delay
-        });
+        // Verify payment with backend API
+        const response = await paymentAPI.verifyPayment(orderId);
 
         if (response.success) {
           setPaymentStatus('success');
@@ -78,7 +68,6 @@ const PaymentSuccess: React.FC = () => {
           });
         }
       } catch (error) {
-        console.error('Error during payment verification:', error);
         setPaymentStatus('failed');
         setMessage('An unexpected error occurred during payment verification.');
         toast({

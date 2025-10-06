@@ -17,6 +17,16 @@ export interface CreatePaymentResponse {
   };
 }
 
+export interface VerifyPaymentResponse {
+  success: boolean;
+  message: string;
+  data?: {
+    planName: string;
+    planId: string;
+    expiresAt: string;
+  };
+}
+
 export const paymentAPI = {
   /**
    * Create payment for plan upgrade
@@ -31,6 +41,14 @@ export const paymentAPI = {
    */
   getUserProfile: async (): Promise<any> => {
     const response = await http.get('/users/profile');
+    return response.data;
+  },
+
+  /**
+   * Verify payment completion
+   */
+  verifyPayment: async (orderId: string): Promise<VerifyPaymentResponse> => {
+    const response = await http.post('/payments/verify', { orderId });
     return response.data;
   }
 };

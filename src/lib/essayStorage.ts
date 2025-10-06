@@ -20,7 +20,6 @@ export const saveEssayToStorage = (
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(dataWithTimestamp));
   } catch (error) {
-    console.error('Failed to save essay to localStorage:', error);
   }
 };
 
@@ -40,7 +39,6 @@ export const getEssayFromStorage = (): SavedEssayData | null => {
 
     return data;
   } catch (error) {
-    console.error('Failed to get essay from localStorage:', error);
     return null;
   }
 };
@@ -49,7 +47,6 @@ export const clearEssayFromStorage = (): void => {
   try {
     localStorage.removeItem(STORAGE_KEY);
   } catch (error) {
-    console.error('Failed to clear essay from localStorage:', error);
   }
 };
 

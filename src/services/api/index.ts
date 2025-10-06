@@ -21,15 +21,17 @@ http.interceptors.response.use(
     return config;
   },
   (error) => {
-    console.error('API Error:', {
-      message: error.message,
-      status: error.response?.status,
-      statusText: error.response?.statusText,
-      data: error.response?.data,
-      url: error.config?.url,
-      method: error.config?.method,
-    });
-
+    // Log errors only in development
+    if (process.env.NODE_ENV === 'development') {
+      console.error('API Error:', {
+        message: error.message,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        url: error.config?.url,
+        method: error.config?.method,
+      });
+    }
 
     throw error;
   }

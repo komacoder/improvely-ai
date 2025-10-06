@@ -28,6 +28,7 @@ interface Submission {
   updatedAt: string;
   score?: number;
   aiFeedback?: any;
+  improvedVersion?: any;
 }
 
 const MySubmissions = () => {
@@ -170,10 +171,13 @@ const MySubmissions = () => {
 
   const filteredAndSortedSubmissions = submissions
     .filter(submission => {
+      // Only show ANALYZED (checked) essays in My Submissions
+      if (submission.status !== 'ANALYZED') return false;
+      
       if (filterStatus === 'all') return true;
       if (filterStatus === 'checked') return submission.status === 'ANALYZED';
-      if (filterStatus === 'pending') return submission.status === 'IN_PROGRESS' || submission.status === 'IDLE';
-      if (filterStatus === 'failed') return submission.status === 'FAILED_TO_CHECK';
+      if (filterStatus === 'pending') return false; // No pending essays should show in My Submissions
+      if (filterStatus === 'failed') return false; // No failed essays should show in My Submissions
       return true;
     })
     .sort((a, b) => {
@@ -291,8 +295,6 @@ const MySubmissions = () => {
                   <SelectContent>
                     <SelectItem value="all">All Essays</SelectItem>
                     <SelectItem value="checked">Checked Essays</SelectItem>
-                    <SelectItem value="pending">Pending</SelectItem>
-                    <SelectItem value="failed">Failed</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

@@ -23,7 +23,6 @@ export const useTopicsByType = (type: 'TASK_ONE' | 'TASK_TWO') => {
       const allTopics = await topicAPI.getAll();
       return allTopics.filter(topic => topic.type === type);
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
     retry: 2,
     refetchOnWindowFocus: false,

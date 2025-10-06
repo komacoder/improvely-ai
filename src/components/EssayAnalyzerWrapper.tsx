@@ -101,19 +101,14 @@ const clearCurrentResults = () => {
         setCurrentSubmissionId(submissionId);
         
         // Start Step 1: Analyze scores (this will show results immediately when ready)
-        console.log('Step 1: Starting scores analysis for submission ID:', submissionId);
         analyzeScoresMutation.mutateAsync(submissionId)
           .then(() => {
-            console.log('Scores analysis completed for submission ID:', submissionId);
             // Start Step 2: Analyze feedback (this will show results immediately when ready)
-            console.log('Step 2: Starting feedback analysis for submission ID:', submissionId);
             return analyzeFeedbackMutation.mutateAsync(submissionId);
           })
           .then(() => {
-            console.log('Feedback analysis completed for submission ID:', submissionId);
             setAnalysisCompleted(true);
             // Start Step 3: Generate improved versions for all three bands
-            console.log('Step 3: Starting improved version generation for submission ID:', submissionId);
             setIsImprovedVersionsLoading(true);
             
             // Generate improved versions for all three bands in parallel
@@ -124,7 +119,6 @@ const clearCurrentResults = () => {
             ];
             
             return Promise.allSettled(bandPromises).then((results) => {
-              console.log('Improved version results:', results);
               
               // Process results and create band versions
               const versions: UiBandVersion[] = [];
@@ -134,29 +128,11 @@ const clearCurrentResults = () => {
                   const band = index === 0 ? 7 : index === 1 ? 8 : 9;
                   const improvedData = result.value.data || result.value;
                   
-                  console.log(`Band ${band} improved version:`, improvedData);
-                  console.log(`Band ${band} improved version data structure:`, {
-                    hasData: !!improvedData,
-                    hasIntroduction: !!improvedData?.introduction,
-                    hasBody: !!improvedData?.body,
-                    hasConclusion: !!improvedData?.conclusion,
-                    bodyType: Array.isArray(improvedData?.body) ? 'array' : typeof improvedData?.body,
-                    bodyLength: Array.isArray(improvedData?.body) ? improvedData.body.length : 'not array'
-                  });
-                  
                   // Extract text content from the response - API returns data in improvedVersion object
                   const improvedVersionData = improvedData.improvedVersion || improvedData;
                   const introduction = improvedVersionData.introduction || '';
                   const body = improvedVersionData.body || [];
                   const conclusion = improvedVersionData.conclusion || '';
-                  
-                  console.log(`Band ${band} API response:`, improvedData);
-                  console.log(`Band ${band} improvedVersionData:`, improvedVersionData);
-                  console.log(`Band ${band} extracted content:`, {
-                    introduction: introduction.substring(0, 100) + '...',
-                    body: Array.isArray(body) ? body.map(b => b.substring(0, 50) + '...') : body,
-                    conclusion: conclusion.substring(0, 100) + '...'
-                  });
                   
                   // Convert body to array if it's a string
                   const bodyArray = Array.isArray(body) ? body : (body ? [body] : []);
@@ -183,7 +159,6 @@ const clearCurrentResults = () => {
               });
               
               if (versions.length > 0) {
-                console.log('Setting band versions from API responses:', versions);
                 setBandVersions(versions);
                 setSelectedBand(versions[0].band);
               }
@@ -192,12 +167,10 @@ const clearCurrentResults = () => {
             });
           })
           .then(() => {
-            console.log('Improved version generation completed for submission ID:', submissionId);
             setImprovedVersionCompleted(true);
             setIsImprovedVersionsLoading(false);
           })
           .catch((error) => {
-            console.error('Analysis step failed for submission ID:', submissionId, error);
             // Don't throw here - partial results might still be useful
             setImprovedVersionCompleted(true); // Mark as completed even if failed
             setIsImprovedVersionsLoading(false);
@@ -205,11 +178,9 @@ const clearCurrentResults = () => {
         
         return submissionId;
       } else {
-        console.error('No submission ID found in response:', response);
         throw new Error('No submission ID received');
       }
     } catch (error) {
-      console.error('Error analyzing essay:', error);
       setIsProcessingEssay(false);
       setAnalysisStartTime(null); // Clear analysis start time on error
       throw error;
@@ -275,17 +246,6 @@ const clearCurrentResults = () => {
   
   // If we have a submissionId but specificSubmission is null, we're still loading
   const isWaitingForSpecificSubmission = (submissionId || currentSubmissionId) && !specificSubmission && !isLoadingSpecific;
-  
-  // Debug logging
-  console.log('EssayAnalyzerWrapper Debug:', {
-    submissionId,
-    currentSubmissionId,
-    specificSubmission,
-    latestSubmission,
-    activeSubmission,
-    isLoadingSpecific,
-    submissionsLoading
-  });
 
   const dynamicTips = getDynamicTips(activeSubmission);
   const isLoadingSubmission = (submissionId || currentSubmissionId) ? isLoadingSpecific : submissionsLoading;
@@ -322,30 +282,8 @@ const clearCurrentResults = () => {
     !activeSubmission?.aiFeedback?.suggestions && 
     !activeSubmission?.aiFeedback?.mistakes ||
     // Show loading when we have a submission but no results yet
-    (currentSubmissionId && !activeSubmission) ||
-    // Show loading for 300 seconds (5 minutes) after analysis starts, but only if we don't have ANY results yet
-    (analysisStartTime && (Date.now() - analysisStartTime) < 300000 && 
-     !activeSubmission?.score && 
-     !activeSubmission?.aiFeedback?.suggestions && 
-     !activeSubmission?.aiFeedback?.mistakes &&
-     !activeSubmission?.aiFeedback?.improvedVersions && 
-     !activeSubmission?.improvedVersion);
+    (currentSubmissionId && !activeSubmission);
 
-  // Debug logging for shouldShowProcessing
-  useEffect(() => {
-    console.log('shouldShowProcessing:', shouldShowProcessing, {
-      isProcessingEssay,
-      submitEssayPending: submitEssayMutation.isPending,
-      analyzeScoresPending: analyzeScoresMutation.isPending,
-      analyzeFeedbackPending: analyzeFeedbackMutation.isPending,
-      improvedVersionPending: generateImprovedVersionMutation.isPending,
-      hasImprovedVersions: !!activeSubmission?.aiFeedback?.improvedVersions,
-      hasImprovedVersion: !!activeSubmission?.improvedVersion,
-      analysisStartTime,
-      currentSubmissionId,
-      activeSubmissionStatus: activeSubmission?.status
-    });
-  }, [shouldShowProcessing, isProcessingEssay, submitEssayMutation.isPending, analyzeScoresMutation.isPending, analyzeFeedbackMutation.isPending, generateImprovedVersionMutation.isPending, activeSubmission?.aiFeedback?.improvedVersions, activeSubmission?.improvedVersion, analysisStartTime, currentSubmissionId, activeSubmission?.status]);
 
   // Rotate tips every 4 seconds when processing
   useEffect(() => {
@@ -442,18 +380,9 @@ const clearCurrentResults = () => {
     let defaultSelectedBand: number | null = null;
     
     if (activeSubmission && activeSubmission !== null && (submissionId || currentSubmissionId)) {
-      console.log('Submission data received:', {
-        submissionId,
-        currentSubmissionId,
-        hasImprovedVersions: !!activeSubmission?.aiFeedback?.improvedVersions,
-        hasImprovedVersion: !!activeSubmission?.improvedVersion,
-        status: activeSubmission?.status,
-        score: activeSubmission?.score
-      });
       
       // If we have scores, stop processing and show results immediately
       if (activeSubmission?.score) {
-        console.log('Scores received, stopping processing state');
         setIsProcessingEssay(false);
         setAnalysisStartTime(null);
         setHasAnalyzed(true);
@@ -462,22 +391,11 @@ const clearCurrentResults = () => {
       
       // If we have feedback, show it immediately
       if (activeSubmission?.aiFeedback?.suggestions || activeSubmission?.aiFeedback?.mistakes) {
-        console.log('Feedback received, showing immediately');
         setAnalysisCompleted(true);
       }
       
-      // Debug: Log what data we have
-      console.log('Submission data debug:', {
-        hasImprovedVersion: !!activeSubmission?.improvedVersion,
-        hasImprovedVersions: !!activeSubmission?.aiFeedback?.improvedVersions,
-        improvedVersion: activeSubmission?.improvedVersion,
-        improvedVersions: activeSubmission?.aiFeedback?.improvedVersions,
-        fullSubmission: activeSubmission
-      });
-      
       // If we have improved versions (either from aiFeedback or separate improvedVersion), show the analysis
       if (activeSubmission?.aiFeedback?.improvedVersions || activeSubmission?.improvedVersion) {
-        console.log('Improved versions received, showing immediately');
         setHasAnalyzed(true);
         setAnalysisStartTime(null); // Clear analysis start time when results are ready
         setImprovedVersionCompleted(true);
@@ -491,10 +409,8 @@ const clearCurrentResults = () => {
           setSelectedBand(9);
         }
       } else {
-        console.log('No improved versions found in submission data');
         // If we have scores and feedback but no improved versions, still show the analysis
         if (activeSubmission?.score && (activeSubmission?.aiFeedback?.suggestions || activeSubmission?.aiFeedback?.mistakes)) {
-          console.log('Showing analysis without improved versions');
           setHasAnalyzed(true);
           setAnalysisStartTime(null);
           setImprovedVersionCompleted(false); // Mark as not completed since we don't have improved versions
@@ -502,22 +418,14 @@ const clearCurrentResults = () => {
       }
 
         // NEW LOGIC: Handle improved versions from MySubmissions (already processed data)
-        console.log('Processing improved versions for MySubmissions:', {
-          hasImprovedVersion: !!activeSubmission?.improvedVersion,
-          hasImprovedVersions: !!activeSubmission?.aiFeedback?.improvedVersions,
-          improvedVersion: activeSubmission?.improvedVersion,
-          improvedVersions: activeSubmission?.aiFeedback?.improvedVersions
-        });
         
         // Handle new improvedVersion structure with band7, band8, band9 properties
         if (activeSubmission && activeSubmission !== null && activeSubmission?.improvedVersion) {
-          console.log('Processing activeSubmission.improvedVersion:', activeSubmission?.improvedVersion);
           
           const improvedVersionData = activeSubmission?.improvedVersion;
           
           // Check for Band 7
           if (improvedVersionData.band7) {
-            console.log('Found Band 7 improved version data.');
             const band7Data = improvedVersionData.band7;
             versions.push({
               band: 7,
@@ -542,7 +450,6 @@ const clearCurrentResults = () => {
           
           // Check for Band 8
           if (improvedVersionData.band8) {
-            console.log('Found Band 8 improved version data.');
             const band8Data = improvedVersionData.band8;
             versions.push({
               band: 8,
@@ -567,7 +474,6 @@ const clearCurrentResults = () => {
           
           // Check for Band 9
           if (improvedVersionData.band9) {
-            console.log('Found Band 9 improved version data.');
             const band9Data = improvedVersionData.band9;
             versions.push({
               band: 9,
@@ -593,7 +499,6 @@ const clearCurrentResults = () => {
         
         // Set band versions if we have any
         if (versions.length > 0) {
-          console.log('Setting band versions from MySubmissions:', versions);
           setBandVersions(versions);
           setSelectedBand(defaultSelectedBand || versions[0].band);
           setCurrentBand(defaultSelectedBand || versions[0].band);
@@ -606,7 +511,6 @@ const clearCurrentResults = () => {
           // Stop processing state when we have results
           setIsProcessingEssay(false);
         } else {
-          console.log('No improved versions found in MySubmissions data.');
           setHasAnalyzed(false);
           if (activeSubmission && activeSubmission !== null) {
             onScoreUpdate(activeSubmission?.score || null, false);
@@ -711,7 +615,6 @@ const clearCurrentResults = () => {
         setIsProcessingEssay(false);
       } else {
         // If we have submission data but no improved versions, still show the essay
-        console.log('Submission found but no improved versions yet');
         setHasAnalyzed(false);
         if (activeSubmission && activeSubmission !== null) {
           onScoreUpdate(activeSubmission?.score || null, false);
@@ -735,19 +638,8 @@ const clearCurrentResults = () => {
       activeSubmission?.status === IELTSWritingSubmissionStatus.ANALYZED) &&
     // Show results as soon as we have scores (even if feedback/improved versions are still loading)
     (activeSubmission?.score || 
-     (submissionId && activeSubmission?.status === IELTSWritingSubmissionStatus.ANALYZED));
+     activeSubmission?.status === IELTSWritingSubmissionStatus.ANALYZED);
 
-  // Debug logging for shouldShowResults
-  useEffect(() => {
-    console.log('shouldShowResults:', shouldShowResults, {
-      hasActiveSubmission: !!activeSubmission,
-      hasImprovedVersions: !!activeSubmission?.aiFeedback?.improvedVersions,
-      hasImprovedVersion: !!activeSubmission?.improvedVersion,
-      hasSubmissionId: !!(submissionId || currentSubmissionId),
-      status: activeSubmission?.status,
-      bandVersionsLength: bandVersions.length
-    });
-  }, [shouldShowResults, activeSubmission, submissionId, currentSubmissionId, bandVersions.length]);
 
 
   // Show loading state when fetching specific submission (only for URL-based submissions)
@@ -823,19 +715,8 @@ const clearCurrentResults = () => {
     );
   }
 
-  // Debug: Log why shouldShowResults might be false
-  console.log('Rendering decision:', {
-    shouldShowResults,
-    hasActiveSubmission: !!activeSubmission,
-    hasImprovedVersions: !!activeSubmission?.aiFeedback?.improvedVersions,
-    hasImprovedVersion: !!activeSubmission?.improvedVersion,
-    hasSubmissionId: !!(submissionId || currentSubmissionId),
-    status: activeSubmission?.status,
-    bandVersionsLength: bandVersions.length
-  });
 
   if (shouldShowResults && activeSubmission) {
-    console.log('Showing EssayResults');
     
     // Determine loading states for different sections
     const hasFeedback = !!(activeSubmission?.aiFeedback?.suggestions || activeSubmission?.aiFeedback?.mistakes);

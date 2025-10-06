@@ -53,7 +53,6 @@ const getCorrespondingDataId = (dataId: string, isOriginal: boolean): string => 
     if (paragraphType.includes('original')) {
       const improvedType = paragraphType.replace('original', 'improved');
       const result = `${improvedType}-${sentenceIndex}`;
-      console.log(`Cross-highlight mapping: ${dataId} -> ${result}`);
       return result;
     }
   } else {
@@ -61,7 +60,6 @@ const getCorrespondingDataId = (dataId: string, isOriginal: boolean): string => 
     if (paragraphType.includes('improved')) {
       const originalType = paragraphType.replace('improved', 'original');
       const result = `${originalType}-${sentenceIndex}`;
-      console.log(`Cross-highlight mapping: ${dataId} -> ${result}`);
       return result;
     }
   }
@@ -90,13 +88,6 @@ export const SentenceWrapper: React.FC<SentenceWrapperProps> = memo(({
       const isOriginal = dataId.includes('original');
       const correspondingId = getCorrespondingDataId(hoveredDataId || '', !isOriginal);
       const shouldHighlight = hoveredDataId === dataId || correspondingId === dataId;
-      
-      console.log(`Hover listener for ${dataId}:`, {
-        hoveredDataId,
-        isOriginal,
-        correspondingId,
-        shouldHighlight
-      });
       
       setIsGloballyHovered(shouldHighlight);
     };
