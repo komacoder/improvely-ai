@@ -1,177 +1,81 @@
 <div align="center">
 
-# ✍️ Uplift
+<img width="100%" src="https://capsule-render.vercel.app/api?type=waving&height=220&color=0:7C3AED,50:3B82F6,100:06B6D4&text=UPLIFT&fontSize=65&fontColor=ffffff&animation=fadeIn"/>
 
-### *Helping IELTS students become Band 8+ writers with AI.*
+<h3>🚀 AI-powered IELTS Writing Experience</h3>
 
-<p>
-An intelligent writing assistant that analyzes essays, predicts IELTS scores,
-and explains exactly how to improve every sentence.
-</p>
+<img src="https://readme-typing-svg.demolab.com?font=Space+Grotesk&weight=700&size=24&duration=3500&pause=1000&color=8B5CF6&center=true&vCenter=true&width=700&lines=Write+Smarter.;Analyze+Deeper.;Improve+Faster.;Reach+Band+9."/>
 
 <br>
 
-<img src="./public/demo.gif" width="900"/>
+<p>
 
-<br><br>
+<img src="https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react"/>
+<img src="https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript"/>
+<img src="https://img.shields.io/badge/Vite-646CFF?style=flat-square&logo=vite"/>
+<img src="https://img.shields.io/badge/Tailwind-06B6D4?style=flat-square&logo=tailwindcss"/>
 
-![React](https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge\&logo=react)
-![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge\&logo=typescript)
-![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge\&logo=vite)
-![Tailwind](https://img.shields.io/badge/Tailwind-06B6D4?style=for-the-badge\&logo=tailwindcss)
+</p>
 
 </div>
 
 ---
 
-# The Problem
-
-Most IELTS platforms tell students:
-
-> **"Your essay scored Band 6.5."**
-
-...and stop there.
-
-Students still don't know:
-
-* Why?
-* Which sentences are weak?
-* How would a Band 8 answer look?
-* What exactly should be improved?
-
----
-
-# Our Solution
-
-Uplift turns every essay into an interactive learning experience.
-
-Instead of giving only a score, the platform teaches students how to improve.
-
-```
-Write Essay
-      │
-      ▼
-AI Analysis
-      │
-      ▼
-Band Prediction
-      │
-      ▼
-Sentence Improvements
-      │
-      ▼
-Learn → Rewrite → Improve
-```
-
----
-
-# Experience
-
-<table>
-<tr>
-<td width="50%">
-
-### 🧠 Analyze
-
-Receive AI-powered IELTS evaluation.
-
-</td>
-
-<td width="50%">
-
-### 🎯 Understand
-
-See why every score was given.
-
-</td>
-</tr>
-
-<tr>
-<td>
-
-### ✨ Improve
-
-Every sentence gets a better version.
-
-</td>
-
-<td>
-
-### 📈 Progress
-
-Track every submission over time.
-
-</td>
-</tr>
-</table>
-
----
-
-# Built With
+## ◉ About
 
 ```text
-React 18
-TypeScript
-Vite
-Tailwind CSS
-shadcn/ui
-Radix UI
-TanStack Query
-React Hook Form
-Zod
-JWT
-Google OAuth
+📝 Write your IELTS essay
+        │
+        ▼
+🤖 AI analyzes your writing
+        │
+        ▼
+📊 Predicts Band Score
+        │
+        ▼
+✨ Improves every sentence
 ```
 
 ---
 
-# Quick Start
+## ✦ Features
 
-```bash
-git clone <repo>
-
-npm install
-
-npm run dev
+```diff
++ AI Band Prediction
++ Sentence-by-Sentence Comparison
++ Interactive Highlighting
++ PDF Export
++ Secure Authentication
++ Submission History
 ```
 
 ---
 
-# Preview
+## ⚡ Tech
 
-| Home           | Analysis       | Result         |
-| -------------- | -------------- | -------------- |
-| Add screenshot | Add screenshot | Add screenshot |
+```yaml
+Frontend:
+  - React
+  - TypeScript
+  - Vite
 
----
+UI:
+  - Tailwind CSS
+  - shadcn/ui
+  - Radix UI
 
-# Architecture
-
-```text
-Student
-    │
-    ▼
- React Frontend
-    │
- REST API
-    │
- AI Engine
-    │
- Essay Analysis
+Tools:
+  - React Query
+  - JWT
+  - Google OAuth
 ```
-
----
-
-# Vision
-
-We're building more than an essay checker.
-
-Our goal is to create an AI mentor that helps millions of students prepare for IELTS through personalized feedback, intelligent learning paths, and continuous improvement.
 
 ---
 
 <div align="center">
 
-### Made with ❤️ for future Band 9 students.
+### ⭐ Transform Writing Into Results
+
+<img src="https://capsule-render.vercel.app/api?type=rect&height=80&section=footer&color=0:7C3AED,50:3B82F6,100:06B6D4"/>
 
 </div>
