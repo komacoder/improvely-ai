@@ -1,148 +1,177 @@
-# ✍️ Uplift — AI IELTS Writing Analyzer
+<div align="center">
 
-> *Write. Analyze. Improve. Repeat.*
+# ✍️ Uplift
 
-An AI-powered platform that helps IELTS students transform their essays into higher-band responses through detailed analysis, intelligent feedback, and sentence-level improvements.
+### *Helping IELTS students become Band 8+ writers with AI.*
 
----
+<p>
+An intelligent writing assistant that analyzes essays, predicts IELTS scores,
+and explains exactly how to improve every sentence.
+</p>
 
-## 🌍 Why Uplift?
+<br>
 
-Most IELTS tools only tell you **your score**.
+<img src="./public/demo.gif" width="900"/>
 
-**Uplift tells you why.**
+<br><br>
 
-Instead of receiving a simple band prediction, users receive a complete breakdown of their essay, discover weak areas, compare every sentence with an improved version, and understand exactly how to write like a Band 8–9 candidate.
+![React](https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge\&logo=react)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge\&logo=typescript)
+![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge\&logo=vite)
+![Tailwind](https://img.shields.io/badge/Tailwind-06B6D4?style=for-the-badge\&logo=tailwindcss)
 
----
-
-## ✨ What Makes It Different?
-
-🧠 AI Essay Evaluation
-
-Predicts IELTS Writing band score with detailed explanations.
-
-🔍 Sentence-by-Sentence Comparison
-
-Compare every original sentence with an AI-improved version.
-
-🎯 Interactive Highlights
-
-Hover over a sentence to instantly find its improved counterpart.
-
-📊 Detailed Feedback
-
-Grammar • Vocabulary • Coherence • Task Achievement • Cohesion
-
-📄 Export Results
-
-Download the complete analysis as a PDF.
-
-🔐 Secure Authentication
-
-Email, phone verification, JWT authentication, and Google Sign-In.
-
-📚 Essay History
-
-Every submission is saved so users can track progress over time.
+</div>
 
 ---
 
-## ⚙️ Tech Stack
+# The Problem
 
-| Frontend | React 18 + TypeScript + Vite        |
-| -------- | ----------------------------------- |
-| Styling  | Tailwind CSS + shadcn/ui + Radix UI |
-| State    | TanStack Query                      |
-| Forms    | React Hook Form + Zod               |
-| Auth     | JWT + Google OAuth                  |
-| PDF      | jsPDF + html2canvas                 |
+Most IELTS platforms tell students:
+
+> **"Your essay scored Band 6.5."**
+
+...and stop there.
+
+Students still don't know:
+
+* Why?
+* Which sentences are weak?
+* How would a Band 8 answer look?
+* What exactly should be improved?
 
 ---
 
-## 🚀 Getting Started
+# Our Solution
+
+Uplift turns every essay into an interactive learning experience.
+
+Instead of giving only a score, the platform teaches students how to improve.
+
+```
+Write Essay
+      │
+      ▼
+AI Analysis
+      │
+      ▼
+Band Prediction
+      │
+      ▼
+Sentence Improvements
+      │
+      ▼
+Learn → Rewrite → Improve
+```
+
+---
+
+# Experience
+
+<table>
+<tr>
+<td width="50%">
+
+### 🧠 Analyze
+
+Receive AI-powered IELTS evaluation.
+
+</td>
+
+<td width="50%">
+
+### 🎯 Understand
+
+See why every score was given.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+### ✨ Improve
+
+Every sentence gets a better version.
+
+</td>
+
+<td>
+
+### 📈 Progress
+
+Track every submission over time.
+
+</td>
+</tr>
+</table>
+
+---
+
+# Built With
+
+```text
+React 18
+TypeScript
+Vite
+Tailwind CSS
+shadcn/ui
+Radix UI
+TanStack Query
+React Hook Form
+Zod
+JWT
+Google OAuth
+```
+
+---
+
+# Quick Start
 
 ```bash
-git clone <repository-url>
-
-cd uplift
+git clone <repo>
 
 npm install
 
 npm run dev
 ```
 
-Create `.env.local`
+---
 
-```env
-VITE_API_BASE_URL=
-VITE_GOOGLE_CLIENT_ID=
-VITE_RECAPTCHA_SITE_KEY=
-```
+# Preview
 
-Open:
-
-```
-http://localhost:5173
-```
+| Home           | Analysis       | Result         |
+| -------------- | -------------- | -------------- |
+| Add screenshot | Add screenshot | Add screenshot |
 
 ---
 
-## 📂 Project Structure
+# Architecture
 
-```
-src
-├── components
-├── modules
-├── pages
-├── hooks
-├── services
-├── lib
-└── types
+```text
+Student
+    │
+    ▼
+ React Frontend
+    │
+ REST API
+    │
+ AI Engine
+    │
+ Essay Analysis
 ```
 
 ---
 
-## 💡 Built For
+# Vision
 
-* IELTS Students
-* English Learners
-* Language Institutes
-* Teachers
-* AI Education Platforms
+We're building more than an essay checker.
+
+Our goal is to create an AI mentor that helps millions of students prepare for IELTS through personalized feedback, intelligent learning paths, and continuous improvement.
 
 ---
 
-## 📈 Future Vision
+<div align="center">
 
-* AI Writing Coach
-* Personalized Learning Roadmaps
-* Speaking Analysis
-* Reading & Listening Modules
-* Mobile Application
-* Real-time Collaboration
+### Made with ❤️ for future Band 9 students.
 
----
-
-## 🛠 Scripts
-
-```bash
-npm run dev
-npm run build
-npm run preview
-npm run lint
-```
-
----
-
-## ⭐ If you like this project...
-
-Leave a ⭐ on the repository.
-
-It motivates future development and helps others discover the project.
-
----
-
-<p align="center">
-Built to help students write better English, not just score higher.
-</p>
+</div>
