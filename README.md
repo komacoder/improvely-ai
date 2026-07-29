@@ -1,185 +1,148 @@
-# Uplift Startup - IELTS Writing Essay Analyzer
+# ✍️ Uplift — AI IELTS Writing Analyzer
 
-A comprehensive web application for analyzing and improving IELTS writing essays with AI-powered feedback and band score predictions.
+> *Write. Analyze. Improve. Repeat.*
 
-## 🚀 Features
-
-- **Essay Analysis**: Upload and analyze IELTS writing essays
-- **Band Score Prediction**: Get detailed band scores (7, 8, 9) with explanations
-- **Sentence-by-Sentence Comparison**: Compare original and improved versions
-- **Interactive Highlighting**: Hover to highlight corresponding sentences
-- **PDF Export**: Download analysis results as PDF
-- **User Authentication**: Secure login with phone/email verification
-- **Submission History**: Track and review past submissions
-
-## 🛠️ Technologies Used
-
-- **Frontend**: React 18, TypeScript, Vite
-- **UI Components**: shadcn/ui, Radix UI, Tailwind CSS
-- **State Management**: React Query (TanStack Query)
-- **Authentication**: JWT tokens, Google OAuth
-- **Form Handling**: React Hook Form with Zod validation
-- **PDF Generation**: jsPDF, html2canvas
-- **Icons**: Lucide React
-
-## 📦 Installation
-
-### Prerequisites
-
-- Node.js (v18 or higher)
-- npm or yarn
-
-### Setup
-
-1. **Clone the repository**
-
-   ```bash
-   git clone <YOUR_REPOSITORY_URL>
-   cd uplift-startup
-   ```
-
-2. **Install dependencies**
-
-   ```bash
-   npm install
-   ```
-
-3. **Environment Configuration**
-   Create a `.env.local` file in the root directory:
-
-   ```env
-   VITE_API_BASE_URL=your_api_base_url
-   VITE_GOOGLE_CLIENT_ID=your_google_client_id
-   VITE_RECAPTCHA_SITE_KEY=your_recaptcha_site_key
-   ```
-
-4. **Start development server**
-
-   ```bash
-   npm run dev
-   ```
-
-5. **Open in browser**
-   Navigate to `http://localhost:5173`
-
-## 🏗️ Available Scripts
-
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run build:dev` - Build in development mode
-- `npm run build:analyze` - Build with bundle analysis
-- `npm run preview` - Preview production build
-- `npm run lint` - Run ESLint
-- `npm run lint:fix` - Fix ESLint issues automatically
-- `npm run clean` - Clean build artifacts
-
-## 📁 Project Structure
-
-```
-src/
-├── components/          # Reusable UI components
-│   ├── ui/             # shadcn/ui components
-│   ├── EssayAnalyzer.tsx
-│   ├── EssayResults.tsx
-│   └── ...
-├── pages/              # Page components
-│   ├── Index.tsx
-│   ├── About.tsx
-│   ├── Pricing.tsx
-│   └── ...
-├── modules/            # Feature modules
-│   ├── auth/           # Authentication
-│   ├── essay/          # Essay analysis
-│   ├── plan/           # Subscription plans
-│   └── ...
-├── services/           # API services
-├── hooks/              # Custom React hooks
-├── lib/                # Utility functions
-└── types/              # TypeScript type definitions
-```
-
-## 🔧 Configuration
-
-### Build Optimization
-
-The project is configured with:
-
-- **Code Splitting**: Automatic chunking for better performance
-- **Tree Shaking**: Removes unused code
-- **Minification**: Terser for production builds
-- **Asset Optimization**: Image and CSS optimization
-
-### Performance Features
-
-- **Lazy Loading**: Components loaded on demand
-- **Memoization**: Optimized re-renders
-- **Service Worker**: Offline functionality
-- **Caching**: Intelligent asset caching
-
-## 🚀 Deployment
-
-### Production Build
-
-```bash
-npm run build
-```
-
-The build output will be in the `dist/` directory.
-
-### Deployment Options
-
-1. **Static Hosting** (Netlify, Vercel, GitHub Pages)
-2. **Traditional Web Server** (Nginx, Apache)
-3. **Container Deployment** (Docker)
-
-See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed deployment instructions.
-
-## 🔐 Environment Variables
-
-| Variable                      | Description               | Required |
-| ----------------------------- | ------------------------- | -------- |
-| `VITE_API_BASE_URL`           | Backend API base URL      | Yes      |
-| `VITE_GOOGLE_CLIENT_ID`       | Google OAuth client ID    | Yes      |
-| `VITE_RECAPTCHA_SITE_KEY`     | reCAPTCHA site key        | Yes      |
-| `VITE_ENABLE_ANALYTICS`       | Enable analytics tracking | No       |
-| `VITE_ENABLE_ERROR_REPORTING` | Enable error reporting    | No       |
-
-## 📱 Browser Support
-
-- Chrome (latest)
-- Firefox (latest)
-- Safari (latest)
-- Edge (latest)
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🆘 Support
-
-For support and questions:
-
-- Create an issue in the repository
-- Contact the development team
-- Check the documentation in `/docs`
-
-## 🎯 Roadmap
-
-- [ ] Mobile app development
-- [ ] Advanced analytics dashboard
-- [ ] Multi-language support
-- [ ] Offline mode improvements
-- [ ] Integration with more LMS platforms
+An AI-powered platform that helps IELTS students transform their essays into higher-band responses through detailed analysis, intelligent feedback, and sentence-level improvements.
 
 ---
 
-**Built with ❤️ for IELTS students worldwide**
-## second pr
+## 🌍 Why Uplift?
+
+Most IELTS tools only tell you **your score**.
+
+**Uplift tells you why.**
+
+Instead of receiving a simple band prediction, users receive a complete breakdown of their essay, discover weak areas, compare every sentence with an improved version, and understand exactly how to write like a Band 8–9 candidate.
+
+---
+
+## ✨ What Makes It Different?
+
+🧠 AI Essay Evaluation
+
+Predicts IELTS Writing band score with detailed explanations.
+
+🔍 Sentence-by-Sentence Comparison
+
+Compare every original sentence with an AI-improved version.
+
+🎯 Interactive Highlights
+
+Hover over a sentence to instantly find its improved counterpart.
+
+📊 Detailed Feedback
+
+Grammar • Vocabulary • Coherence • Task Achievement • Cohesion
+
+📄 Export Results
+
+Download the complete analysis as a PDF.
+
+🔐 Secure Authentication
+
+Email, phone verification, JWT authentication, and Google Sign-In.
+
+📚 Essay History
+
+Every submission is saved so users can track progress over time.
+
+---
+
+## ⚙️ Tech Stack
+
+| Frontend | React 18 + TypeScript + Vite        |
+| -------- | ----------------------------------- |
+| Styling  | Tailwind CSS + shadcn/ui + Radix UI |
+| State    | TanStack Query                      |
+| Forms    | React Hook Form + Zod               |
+| Auth     | JWT + Google OAuth                  |
+| PDF      | jsPDF + html2canvas                 |
+
+---
+
+## 🚀 Getting Started
+
+```bash
+git clone <repository-url>
+
+cd uplift
+
+npm install
+
+npm run dev
+```
+
+Create `.env.local`
+
+```env
+VITE_API_BASE_URL=
+VITE_GOOGLE_CLIENT_ID=
+VITE_RECAPTCHA_SITE_KEY=
+```
+
+Open:
+
+```
+http://localhost:5173
+```
+
+---
+
+## 📂 Project Structure
+
+```
+src
+├── components
+├── modules
+├── pages
+├── hooks
+├── services
+├── lib
+└── types
+```
+
+---
+
+## 💡 Built For
+
+* IELTS Students
+* English Learners
+* Language Institutes
+* Teachers
+* AI Education Platforms
+
+---
+
+## 📈 Future Vision
+
+* AI Writing Coach
+* Personalized Learning Roadmaps
+* Speaking Analysis
+* Reading & Listening Modules
+* Mobile Application
+* Real-time Collaboration
+
+---
+
+## 🛠 Scripts
+
+```bash
+npm run dev
+npm run build
+npm run preview
+npm run lint
+```
+
+---
+
+## ⭐ If you like this project...
+
+Leave a ⭐ on the repository.
+
+It motivates future development and helps others discover the project.
+
+---
+
+<p align="center">
+Built to help students write better English, not just score higher.
+</p>
