@@ -12,7 +12,7 @@ import { paymentAPI } from '@/services/paymentAPI';
 const PaymentSuccess: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { user, authenticated } = useAuthContext();
+  const { authenticated } = useAuthContext();
   const queryClient = useQueryClient();
 
   const [paymentStatus, setPaymentStatus] = useState<'loading' | 'success' | 'failed'>('loading');

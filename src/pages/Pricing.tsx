@@ -15,7 +15,7 @@ import { useCreateOrderClick } from '@/modules/plan/hooks/usePlans';
 import { useGetPlans } from '@/services/planQueries';
 import { useGetTrial } from '@/components/hooks/useGetTrial';
 import { useUserProfile } from '@/services/paymentMutations';
-import { Check, Crown, Star, CreditCard, Smartphone } from 'lucide-react';
+import { Check, Crown, Star } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Click, Payme } from '@/assets/Payme';
@@ -87,13 +87,6 @@ const Pricing = () => {
     }
   };
 
-
-  // Debug: Log user profile data
-
-  // Manual refresh function for testing
-  const handleRefreshData = () => {
-    window.location.reload();
-  };
 
   const plans = plansData.map((plan) => {
     // Get user's current plan from profile data

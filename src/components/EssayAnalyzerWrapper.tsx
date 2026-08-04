@@ -5,13 +5,7 @@ import { SendSubmission } from '@/modules/essay/types/SendSubmission';
 import { EssayCreator } from './EssayCreator';
 import { EssayResults } from './EssayResults';
 import { IELTSWritingSubmissionStatus } from '@/modules/essay/types/Submission';
-import {
-  getEssayFromStorage,
-  clearEssayFromStorage,
-  SavedEssayData,
-} from '@/lib/essayStorage';
 import { useAuthContext } from '@/auth/hooks/useAuthContext';
-import { toast } from 'sonner';
 
 interface AnalysisOptions {
   colorAlignment: boolean;

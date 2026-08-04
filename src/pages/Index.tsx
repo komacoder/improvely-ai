@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Navigation } from '@/components/ui/navigation';
-import { EssayAnalyzer } from '@/components/EssayAnalyzer';
+import { EssayAnalyzerWrapper } from '@/components/EssayAnalyzerWrapper';
 import { TypingAnimation } from '@/components/TypingAnimation';
 import { useAuthContext } from '@/auth/hooks/useAuthContext';
 
@@ -51,7 +51,7 @@ const Index = () => {
               />
             </p>
           </div>
-          <EssayAnalyzer
+          <EssayAnalyzerWrapper
             onScoreUpdate={(band, analyzed) => {
               setCurrentBand(band);
               setHasAnalyzed(analyzed);

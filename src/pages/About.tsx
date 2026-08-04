@@ -1,6 +1,5 @@
 import { Navigation } from '@/components/ui/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   Brain,
@@ -12,7 +11,6 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { paths } from '@/routes/paths';
 
 const About = () => {
   const navigate = useNavigate();

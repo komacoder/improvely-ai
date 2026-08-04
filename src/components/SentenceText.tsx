@@ -1,6 +1,4 @@
-import React, { useMemo, memo } from 'react';
-import { parseSentences } from '@/lib/sentenceUtils';
-import { SentenceWrapper } from './SentenceWrapper';
+import React, { memo } from 'react';
 import { SuggestionHighlighter } from './SuggestionHighlighter';
 
 interface InlineFeedback {
@@ -15,10 +13,6 @@ interface InlineFeedback {
 
 interface SentenceTextProps {
   text: string;
-  paragraphId: string;
-  activeSentenceId: string | null;
-  onSentenceHover: (sentenceId: string | null) => void;
-  onSentenceFocus: (sentenceId: string | null) => void;
   className?: string;
   inlineFeedback?: InlineFeedback[];
   improvedTextsnippets?: InlineFeedback[];
@@ -27,10 +21,6 @@ interface SentenceTextProps {
 
 export const SentenceText: React.FC<SentenceTextProps> = memo(({
   text,
-  paragraphId,
-  activeSentenceId,
-  onSentenceHover,
-  onSentenceFocus,
   className = '',
   inlineFeedback = [],
   improvedTextsnippets = [],

@@ -14,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { EssayAnalyzer } from '@/components/EssayAnalyzer';
+import { EssayAnalyzerWrapper } from '@/components/EssayAnalyzerWrapper';
 
 interface Submission {
   _id: string;
@@ -349,7 +349,7 @@ const MySubmissions = () => {
               {/* Analysis Content */}
               <Card className="border-2 border-green-200 bg-green-50/20">
                 <CardContent className="p-6">
-                  <EssayAnalyzer
+                  <EssayAnalyzerWrapper
                     submissionId={currentSubmission._id}
                     onScoreUpdate={(band, analyzed) => {
                       setCurrentBand(band);
