@@ -56,7 +56,7 @@
   
   <!-- Call to Action – simple, bold -->
   <div style="background: #0F172A; border: 1px solid #1E293B; border-radius: 60px; padding: 12px 28px; display: inline-block; margin-bottom: 10px;">
-    <span style="color: #8B5CF6; font-weight: 500; letter-spacing: 0.5px;">⭐ Transform Writing Into Results</span>
+    <span style="color: #8B5CF6; font-weight: 500; letter-spacing: 0.5px;">⭐ Transform Writing result</span>
   </div>
   
   <!-- Footer Wave (thin, clean) -->
